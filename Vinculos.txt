@@ -1,0 +1,22 @@
+****************VINCULOS DE PRUEBA**************************************
+http://localhost:8080/startbootstrap-sb-admin-2/pages/index.html
+
+http://localhost:8080/wsPhp/AdvancedNavigation.html
+
+http://localhost:8080/wsPhp/Dashboard
+
+http://localhost:8080/startbootstrap-freelancer
+******************IDEAS PARA SISTEMA POS***********************
+.-Guardar las imagenes de los productos en:
+google fotos, redes sociales en las cuales el costo es menor al no utilizar espacio de almacenamiento en BD
+En alguna BD local o remota pero con costo adicional.
+.-Permitir la integración con plataformas como MercadoLibre, Amazon, facebook, twitter, instagram,
+****************ESTRUCTURA SITIO WEB PYMETI********************************************
+Inicio:
+    Poner un chatbot
+    Registrar solo con email
+    Utilizar la app sin costo solo con 15 productos, con publicidad y uso de BD de 15 M
+****************WEB SERVICE EN PHP******************
+
+
+****************REDISEÑO DE LOS WINFORM DEL POS************
