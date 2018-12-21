@@ -12,10 +12,12 @@ google fotos, redes sociales en las cuales el costo es menor al no utilizar espa
 En alguna BD local o remota pero con costo adicional.
 .-Permitir la integración con plataformas como MercadoLibre, Amazon, facebook, twitter, instagram,
 ****************ESTRUCTURA SITIO WEB PYMETI********************************************
+menu superior: Inicio, Caracterísicas, Descargar, Contactanos, Login
 Inicio:
     Poner un chatbot
     Registrar solo con email
     Utilizar la app sin costo solo con 15 productos, con publicidad y uso de BD de 15 M
+
 ****************WEB SERVICE EN PHP******************
 
 
