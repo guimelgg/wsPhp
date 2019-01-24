@@ -6,6 +6,15 @@ http://localhost:8080/wsPhp/AdvancedNavigation.html
 http://localhost:8080/wsPhp/Dashboard
 
 http://localhost:8080/startbootstrap-freelancer
+
+http://localhost:8080/wsPhp/pages/index.html
+****************VINCULOS WEB SERVICE************************************
+http://localhost:8080/wsPhp/ws/wsconsumir.php
+http://localhost:8080/wsPhp/ws/Server.php
+
+http://localhost:5550/wsWcf/wcfRutinas.svc
+
+http://localhost:8080/wsPhp/rest/api.php?strDBName=patris.db&strOpcion=GetFechaServer
 ******************IDEAS PARA SISTEMA POS***********************
 .-Guardar las imagenes de los productos en:
 google fotos, redes sociales en las cuales el costo es menor al no utilizar espacio de almacenamiento en BD

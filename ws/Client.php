@@ -7,7 +7,7 @@ class Client
     public function __construct()
     {
         require_once(getcwd() . '/lib/nusoap.php');
-        $this->_soapClient= new nusoap_client("http://" . $_SERVER['SERVER_NAME'] .":9090" . $_SERVER['REQUEST_URI'] . '/Server.php?wsdl');
+        $this->_soapClient= new nusoap_client("http://" . $_SERVER['SERVER_NAME'] .":8080" . $_SERVER['REQUEST_URI'] . '/Server.php?wsdl');
         $this->_soapClient->soap_defencoding = 'UTF-8';
     }
 
