@@ -21,6 +21,9 @@ try
       case "GetWsConfig":
         $strResultado="localhost:8080/wsPhp/rest/api.php,wswcf.azurewebsites.net,REST";
         break;
+      case "GetEsquemaInicial":
+
+      break;
       default:
         $strSql='SELECT * FROM IngProducto';
         $result = $db->query($strSql);
