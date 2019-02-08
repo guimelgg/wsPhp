@@ -1,16 +1,14 @@
 <?php
-
-function connectDB(){
-  $strDBName = filter_input(INPUT_GET,'strDBName');
-  if (!$strDBName) {
-    $strDBName = filter_input(INPUT_POST,'strDBName');
-  }
+//global $db;
+//$ggg="Hola";
+function connectDB($strDBName){
+  global $db;
+  //Conectar a la BD
   if ($strDBName) {
     $strPath = "database/".$strDBName;//patris.db
     $db = new PDO('sqlite:'.$strPath);
-    return $db;
+    //$db -> exec("SET CHARACTER SET utf8");
   }
-      
 }
 
  ?>

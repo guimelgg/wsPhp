@@ -1,50 +1,68 @@
 <?php
 header("Content-Type:application/json");
-
-include('db.php');
+if(!ob_start("ob_gzhandler")) ob_start();
 try
 {
-//if (isset($_GET['strDBName']) && $_GET['strDBName']!="" ) {
-  $db=connectDB();
-  if ($db) {
-    $strOpcion=filter_input(INPUT_GET,'strOpcion');
-    if (!$strOpcion){
-      $strOpcion=filter_input(INPUT_POST,'strOpcion');
-    }
-    $strResultado="";
-    switch ($strOpcion) {
-      case "GetFechaServer":
-        $strSql="SELECT strftime('%d/%m/%Y %H:%M',datetime()) Fecha";
-        $result = $db->query($strSql);
-        $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
-        break;
-      case "GetWsConfig":
-        $strResultado="localhost:8080/wsPhp/rest/api.php,wswcf.azurewebsites.net,REST";
-        break;
-      case "GetEsquemaInicial":
-
-      break;
-      default:
-        $strSql='SELECT * FROM IngProducto';
-        $result = $db->query($strSql);
-        $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
-        break;
-    }
-    //SELECT name FROM sqlite_master WHERE type='table'
-    /*$rows= count($result);
-    echo "Number of rows: $rows";*/
-
-    echo $strResultado;
-    /*
-    $LoginRS__query=sprintf("SELECT username, password FROM member WHERE username=%s AND password=%s",
-    GetSQLValueString($_POST["username"], "text"), GetSQLValueString($password, "text"));
-    */
-    // close the database connection
-    $db = NULL;
-  }else {
-    echo "Sin parametros";
+  //SELECT name FROM sqlite_master WHERE type='table'
+  /*$rows= count($result);
+  echo "Number of rows: $rows";*/
+  /*
+  $LoginRS__query=sprintf("SELECT username, password FROM member WHERE username=%s AND password=%s",
+  GetSQLValueString($_POST["username"], "text"), GetSQLValueString($password, "text"));
+  */
+  // close the database connection
+  //if (isset($_GET['strDBName']) && $_GET['strDBName']!="" ) {
+  $strOpcion=filter_input(INPUT_GET,'strOpcion');
+  if (!$strOpcion){
+    $strOpcion=filter_input(INPUT_POST,'strOpcion');
+  }
+  //$Accion
+  $Accion = filter_input(INPUT_GET,'Accion');
+  if (!$Accion) {
+    $Accion = filter_input(INPUT_POST,'Accion');
+  }
+  //$Code1
+  $Code1 = filter_input(INPUT_GET,'Code1');
+  if (!$Code1) {
+    $Code1 = filter_input(INPUT_POST,'Code1');
+  }
+  //$Parametro1
+  $Parametro1 = filter_input(INPUT_GET,'Parametro1');
+  if (!$Parametro1) {
+    $Parametro1 = filter_input(INPUT_POST,'Parametro1');
+  }
+  //$Parametro2
+  $Parametro2 = filter_input(INPUT_GET,'Parametro2');
+  if (!$Parametro2) {
+    $Parametro2 = filter_input(INPUT_POST,'Parametro2');
   }
 
+
+  $strResultado="";
+
+  switch($strOpcion) {//SIN BASE DE DATOS
+    case "GetWsConfig":
+    $strResultado="localhost:8080/wsPhp/rest/api.php,wswcf.azurewebsites.net,REST";
+    break;
+    case "GetEsquemaInicial":
+    //strBase
+    $strBase=filter_input(INPUT_GET,'strBase');
+    if (!$strBase){
+      $strBase=filter_input(INPUT_POST,'strBase');
+    }
+
+    if ($strBase!=""){
+      $strBase="database/".$strBase."bdScript.sql";
+      $myfile= fopen($strBase,"r") or die("");
+      $strResultado=fread($myfile,filesize($strBase));
+      fclose($myfile);
+    }
+    break;
+    default://CON BASE DE DATOS
+      include('apidb.php');
+    break;
+  }
+  echo $strResultado;
 }
 catch(PDOException $e)
 {
