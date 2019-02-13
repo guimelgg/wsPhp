@@ -28,7 +28,7 @@ function pa_BDSI_consultaparaBdSincroniza($Accion,$Code1,$Parametro1,$Parametro2
     $Parametro1 = "'" . $Parametro1 . "'";
     switch($Accion) {
       case "GETDATOSXUSUARIO":
-      $strSql="SELECT * FROM paraModulo WHERE MODU_Date>=$Parametro1";
+      /*$strSql="SELECT * FROM paraModulo WHERE MODU_Date>=$Parametro1";
       $result =$db->query($strSql);
       $strResultado='{"paraModulo":'.json_encode($result->fetchAll(PDO::FETCH_OBJ)).'}';
       //$strResultado='{"paraModulo":'.json_encode($result->fetchAll(PDO::FETCH_OBJ), JSON_UNESCAPED_UNICODE).'}';
@@ -46,17 +46,20 @@ function pa_BDSI_consultaparaBdSincroniza($Accion,$Code1,$Parametro1,$Parametro2
 
       $strSql="SELECT * FROM paraPermisoVario WHERE PERC_UsuaDate>=$Parametro1";
       $result =$db->query($strSql);
-      $strResultado .='{"paraPermisoVario":'.json_encode($result->fetchAll(PDO::FETCH_OBJ)).'}';
+      $strResultado .='{"paraPermisoVario":'.json_encode($result->fetchAll(PDO::FETCH_OBJ)).'}';*/
+      $strResultado='';
       //Tablas
       $strTablas = explode('|', $Parametro2);
       foreach ($strTablas as $key => $value) {
         $strTablaAux = explode('.', $value);
         $strSql="SELECT * FROM $strTablaAux[0] WHERE $strTablaAux[1]>=$Parametro1";
         $result =$db->query($strSql);
-        $strResultado .='{"$strTablaAux[0]":'.json_encode($result->fetchAll(PDO::FETCH_OBJ)).'}';
-        //echo "$key - $value";
+        $strJson=json_encode($result->fetchAll(PDO::FETCH_OBJ));
+        if ($strJson!=='[]'){
+          $strResultado .= ($strResultado == '' ? '' : ',') . '"'.$strTablaAux[0].'":'.$strJson.'';
+        }
       }
-
+      $strResultado = '{'.$strResultado.'}';
       return $strResultado;
       break;
     }
