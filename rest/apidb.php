@@ -3,7 +3,26 @@ $strDBName = filter_input(INPUT_GET,'strDBName');
 if (!$strDBName) {
   $strDBName = filter_input(INPUT_POST,'strDBName');
 }
-
+//$intCode
+$intCode = filter_input(INPUT_GET,'intCode');
+if (!$intCode) {
+  $intCode = filter_input(INPUT_POST,'intCode');
+}
+//$strXml
+$strXml = filter_input(INPUT_GET,'strXml');
+if (!$strXml) {
+  $strXml = filter_input(INPUT_POST,'strXml');
+}
+//$intUsrId
+$intUsrId = filter_input(INPUT_GET,'intUsrId');
+if (!$intUsrId) {
+  $intUsrId = filter_input(INPUT_POST,'intUsrId');
+}
+//$strIpAddress
+$strIpAddress = filter_input(INPUT_GET,'strIpAddress');
+if (!$strIpAddress) {
+  $strIpAddress = filter_input(INPUT_POST,'strIpAddress');
+}
 include('db.php');
 connectDB($strDBName);
 //echo ($db ? "db SI" : "db NO");
@@ -22,6 +41,11 @@ if ($db) {
     case "pa_USUA_consultaparaUsuario":
     $result = pa_USUA_consultaparaUsuario($Accion,$Code1,$Parametro1,$Parametro2);
     $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
+    break;
+    case "pa_USUA_abcparaUsuario":
+    echo $strXml;
+    $result = pa_USUA_abcparaUsuario($intCode,$strXml,$intUsrId,$strIpAddress);
+    //$strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
     break;
     case "GetEsquema":
     $strSql="SELECT BDES_Script FROM paraBdEsquema WHERE BDES_Fecha>".$Parametro1;

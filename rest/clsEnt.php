@@ -22,6 +22,21 @@ function pa_USUA_consultaparaUsuario($Accion,$Code1,$Parametro1,$Parametro2){
   }
 
 }
+function pa_USUA_abcparaUsuario($intCode,$strXml,$intUsrId,$strIpAddress){
+  global $db;
+  if ($db) {
+    echo $strXml;
+    $xDoc= new SimpleXMLElement($strXml);
+    echo $xDoc;
+    foreach ($xDoc->paraUsuario as $paraUsuario) {
+
+      echo $paraUsuario['Accion'];
+    }
+
+  }
+
+
+}
 function pa_BDSI_consultaparaBdSincroniza($Accion,$Code1,$Parametro1,$Parametro2){
   global $db;
   if ($db) {
