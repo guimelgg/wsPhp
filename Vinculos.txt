@@ -1,20 +1,20 @@
 ****************VINCULOS DE PRUEBA**************************************
-http://localhost:8080/startbootstrap-sb-admin-2/pages/index.html
+http://localhost/startbootstrap-sb-admin-2/pages/index.html
 
-http://localhost:8080/wsPhp/AdvancedNavigation.html
+http://localhost/wsPhp/AdvancedNavigation.html
 
-http://localhost:8080/wsPhp/Dashboard
+http://localhost/wsPhp/Dashboard
 
-http://localhost:8080/startbootstrap-freelancer
+http://localhost/startbootstrap-freelancer
 
-http://localhost:8080/wsPhp/pages/index.html
+http://localhost/wsPhp/pages/index.html
 ****************VINCULOS WEB SERVICE************************************
-http://localhost:8080/wsPhp/ws/wsconsumir.php
-http://localhost:8080/wsPhp/ws/Server.php
+http://localhost/wsPhp/ws/wsconsumir.php
+http://localhost/wsPhp/ws/Server.php
 
 http://localhost:5550/wsWcf/wcfRutinas.svc
 
-http://localhost:8080/wsPhp/rest/api.php?strDBName=patris.db&strOpcion=GetFechaServer
+http://localhost/wsPhp/rest/api.php?strDBName=patris.db&strOpcion=GetFechaServer
 ******************IDEAS PARA SISTEMA POS***********************
 .-Guardar las imagenes de los productos en:
 google fotos, redes sociales en las cuales el costo es menor al no utilizar espacio de almacenamiento en BD
@@ -31,3 +31,7 @@ Inicio:
 
 
 ****************REDISEÑO DE LOS WINFORM DEL POS************
+
+
+****************GitHub Personal access tokens***********************
+c4e60fbddad4c6ca49e58af7395d5c2872e93450

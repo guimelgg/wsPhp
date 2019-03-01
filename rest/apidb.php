@@ -27,6 +27,7 @@ include('db.php');
 connectDB($strDBName);
 //echo ($db ? "db SI" : "db NO");
 if ($db) {
+  $gstrFechaHoy="strftime('%Y/%m/%d %H:%M:%S',datetime('now','localtime'))";
   include('clsEnt.php');
   switch ($strOpcion) {
     case "GetFechaServer":
@@ -43,7 +44,6 @@ if ($db) {
     $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
     break;
     case "pa_USUA_abcparaUsuario":
-    echo $strXml;
     $result = pa_USUA_abcparaUsuario($intCode,$strXml,$intUsrId,$strIpAddress);
     //$strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
     break;
