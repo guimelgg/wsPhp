@@ -44,8 +44,9 @@ if ($db) {
     $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
     break;
     case "pa_USUA_abcparaUsuario":
-    $result = pa_USUA_abcparaUsuario($intCode,$strXml,$intUsrId,$strIpAddress);
-    //$strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
+    $result= new \stdClass();
+    $result->Resultado = pa_USUA_abcparaUsuario($intCode,$strXml,$intUsrId,$strIpAddress);    
+    $strResultado=json_encode($result);
     break;
     case "GetEsquema":
     $strSql="SELECT BDES_Script FROM paraBdEsquema WHERE BDES_Fecha>".$Parametro1;
