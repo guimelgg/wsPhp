@@ -42,21 +42,34 @@ try
 
   switch($strOpcion) {//SIN BASE DE DATOS
     case "GetWsConfig":
-    $strResultado="localhost:8080/wsPhp/rest/api.php,wswcf.azurewebsites.net,REST";
+      $strResultado="localhost/wsPhp/rest/api.php,wswcf.azurewebsites.net,REST";
     break;
     case "GetEsquemaInicial":
-    //strBase
-    $strBase=filter_input(INPUT_GET,'strBase');
-    if (!$strBase){
-      $strBase=filter_input(INPUT_POST,'strBase');
-    }
+      $strBase=filter_input(INPUT_GET,'strBase');
+      if (!$strBase){
+        $strBase=filter_input(INPUT_POST,'strBase');
+      }
 
-    if ($strBase!=""){
-      $strBase="database/".$strBase."bdScript.sql";
-      $myfile= fopen($strBase,"r") or die("");
-      $strResultado=fread($myfile,filesize($strBase));
-      fclose($myfile);
-    }
+      if ($strBase!=""){
+        $strBase="database/".$strBase."bdScript.sql";
+        $myfile= fopen($strBase,"r") or die("");
+        $strResultado=fread($myfile,filesize($strBase));
+        fclose($myfile);
+      }
+    break;
+    case "sha1":
+    $utfString = mb_convert_encoding($Accion,"UTF-16LE");
+    $hashTag = sha1($utfString,true);
+    $base64Tag = base64_encode($hashTag);
+    echo $base64Tag . "<br />";
+
+
+      /*$utfString = mb_convert_encoding($Accion,"UTF-16LE");
+      $Paso1=sha1($Accion,true);
+      //echo $Paso1;
+      //echo "\r\n";
+      echo base64_encode(bin2hex($Paso1));
+*/
     break;
     default://CON BASE DE DATOS
       include('apidb.php');

@@ -46,6 +46,7 @@ function pa_USUA_abcparaUsuario($intCode,$strXml,$intUsrId,$strIpAddress){
     //$strAccion=$xDoc->paraUsuario['Accion'];
     $paraUsuario=$xDoc->paraUsuario;
     $strAccion=$paraUsuario['Accion'];
+
     switch($strAccion) {
       case "A":
       /*$strSql="INSERT INTO paraUsuario (USUA_nombCorto,USUA_pwd,USUA_Paterno,USUA_Materno,USUA_Nombre,USUA_PerfilPadreID,USUA_Perfil,USUA_Idioma,USUA_date)".
@@ -91,8 +92,8 @@ function pa_USUA_abcparaUsuario($intCode,$strXml,$intUsrId,$strIpAddress){
           $strSql="INSERT INTO paraPermiso (PERM_UsuaID,PERM_ModuID,PERM_Acceso,PERM_Date)
             VALUES (?,?,?,$gstrFechaHoy)";
             //echo $strSql;
-            /*$stmt = $db->prepare($strSql);
-            $stmt->execute(intval($intCode),[$paraPermiso['MODU_moduId'],$paraPermiso['Acceso']]);*/
+            $stmt = $db->prepare($strSql);
+            $stmt->execute([intval($intCode),$paraPermiso['MODU_moduId'],$paraPermiso['Acceso']]);
             break;
           case "C":
             $strSql="UPDATE paraPermiso SET PERM_Date=$gstrFechaHoy,PERM_Acceso=:PERM_Acceso WHERE PERM_permID=:PERM_permID";
@@ -114,19 +115,19 @@ function pa_USUA_abcparaUsuario($intCode,$strXml,$intUsrId,$strIpAddress){
       foreach ($xDoc->paraUsuario->paraPermisoVario as $paraPermisoVario) {
         switch ($paraPermisoVario['Accion']) {
           case "A":
-          $strSql="INSERT INTO paraPermisoVario (PERC_UsuaID,PERC_CataID,PERC_UsuaDate)
+            $strSql="INSERT INTO paraPermisoVario (PERC_UsuaID,PERC_CataID,PERC_UsuaDate)
             VALUES (?,?,$gstrFechaHoy)";
             //echo $strSql;
-            /*$stmt = $db->prepare($strSql);
-            $stmt->execute(intval($intCode),$paraPermisoVario['PERC_CataID']]);*/
+            $stmt = $db->prepare($strSql);
+            $stmt->execute([intval($intCode),$paraPermisoVario['PERC_CataID']]);
             break;
           case "C":
             break;
           case "B":
-          $strSql="UPDATE paraPermisoVario SET PERC_UsuaDate=$gstrFechaHoy,PERC_Estatus='B' WHERE PERC_PercId=:PERC_PercId";
-          $stmt = $db->prepare($strSql);
-          $stmt->bindParam(':PERC_PercId' , intval($paraPermisoVario['PERC_PercId']), PDO::PARAM_INT);
-          $stmt->execute();
+            $strSql="UPDATE paraPermisoVario SET PERC_UsuaDate=$gstrFechaHoy,PERC_Estatus='B' WHERE PERC_PercId=:PERC_PercId";
+            $stmt = $db->prepare($strSql);
+            $stmt->bindParam(':PERC_PercId' , intval($paraPermisoVario['PERC_PercId']), PDO::PARAM_INT);
+            $stmt->execute();
             break;
         }
       }
