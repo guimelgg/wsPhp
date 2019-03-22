@@ -45,7 +45,17 @@ if ($db) {
     break;
     case "pa_USUA_abcparaUsuario":
     $result= new \stdClass();
-    $result->Resultado = pa_USUA_abcparaUsuario($intCode,$strXml,$intUsrId,$strIpAddress);    
+    $result->Resultado = pa_USUA_abcparaUsuario($intCode,$strXml,$intUsrId,$strIpAddress);
+    $strResultado=json_encode($result);
+    break;
+    case "pa_MODU_abcparaModulo":
+    $result= new \stdClass();
+    $result->Resultado = pa_MODU_abcparaModulo($intCode,$strXml,$intUsrId,$strIpAddress);
+    $strResultado=json_encode($result);
+    break;
+    case "pa_CATA_abcparaCatalogo":
+    $result= new \stdClass();
+    $result->Resultado = pa_CATA_abcparaCatalogo($intCode,$strXml,$intUsrId,$strIpAddress);
     $strResultado=json_encode($result);
     break;
     case "GetEsquema":
@@ -57,7 +67,7 @@ if ($db) {
     $strResultado = pa_BDSI_consultaparaBdSincroniza($Accion,$Code1,$Parametro1,$Parametro2);
     break;
     default:
-    $strSql="SELECT * FROM IngProducto";
+    $strSql="SELECT * FROM paraCatalogo WHERE CATA_CataID=102 ORDER BY CATA_CataID";
     $result = $db->query($strSql);
     $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
     break;

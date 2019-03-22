@@ -58,18 +58,8 @@ try
       }
     break;
     case "sha1":
-    $utfString = mb_convert_encoding($Accion,"UTF-16LE");
-    $hashTag = sha1($utfString,true);
-    $base64Tag = base64_encode($hashTag);
-    echo $base64Tag . "<br />";
-
-
-      /*$utfString = mb_convert_encoding($Accion,"UTF-16LE");
-      $Paso1=sha1($Accion,true);
-      //echo $Paso1;
-      //echo "\r\n";
-      echo base64_encode(bin2hex($Paso1));
-*/
+      include('clsRutinas.php');
+      echo CrearHash($Accion);
     break;
     default://CON BASE DE DATOS
       include('apidb.php');

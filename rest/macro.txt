@@ -1,0 +1,113 @@
+ Public Overridable Function pa_USUA_abcparaUsuario(ByVal intCode As Integer, ByVal strXml As String, ByVal intUsrId As Integer, ByVal strIpAddress As String) As DataTable
+        Select Case intQueryTipo
+            Case QueryTipo.SqlCompact, QueryTipo.SqlSp, QueryTipo.Sqlite
+                Dim bolOriginalcnAbierta As Boolean = cDatos.cnAbierta
+                Dim xNode As XmlNode
+                Dim xDoc As New XmlDocument
+                cDatos.cnAbierta = True
+                'Encabezado
+                Dim strSqlEncCampos As String = ""
+                Dim dtResultado As DataTable
+                xDoc.LoadXml(strXml)
+                xNode = xDoc.SelectSingleNode("paraUsuario")
+                Dim strAccion As String = xNode.Attributes("Accion").Value
+
+                If strAccion = "A" Then
+                    strSql = " INSERT INTO paraUsuario (USUA_nombCorto,USUA_pwd,USUA_Paterno,USUA_Materno,USUA_Nombre,USUA_PerfilPadreID,USUA_Perfil,USUA_Idioma,USUA_date) " &
+                        "SELECT '" & xNode.Attributes("USUA_nombCorto").Value &
+                        "','" & cRutinas.CrearHash(xNode.Attributes("USUA_pwd").Value) &
+                        "','" & xNode.Attributes("USUA_Paterno").Value &
+                        "','" & xNode.Attributes("USUA_Materno").Value &
+                        "','" & xNode.Attributes("USUA_Nombre").Value &
+                        "'," & Val(xNode.Attributes("USUA_PerfilPadreID").Value) &
+                        "," & xNode.Attributes("USUA_Perfil").Value &
+                        ",'" & xNode.Attributes("USUA_Idioma").Value & "'," & gstrFechaHoy
+                    cDatos.sExecuteSql(strSql)
+                    strSql = " SELECT MAX(USUA_usuaID) AS Resultado FROM paraUsuario"
+                    dtResultado = cDatos.fGetDataTable(strSql)
+                    intCode = dtResultado.Rows(0)("Resultado")
+                ElseIf strAccion = "B" Then
+                    strSql = "UPDATE paraUsuario SET USUA_Estatus= 'B' ,USUA_date=" & gstrFechaHoy & " WHERE USUA_usuaID =" & intCode
+
+                    cDatos.sExecuteSql(strSql)
+                ElseIf strAccion = "C" Then
+                    strSql = "UPDATE paraUsuario SET USUA_date=" & gstrFechaHoy &
+                        ",USUA_nombCorto='" & xNode.Attributes("USUA_nombCorto").Value
+                    If xNode.Attributes("USUA_pwd").Value.ToString.Length > 0 Then
+                        strSql &= "',USUA_pwd='" & cRutinas.CrearHash(xNode.Attributes("USUA_pwd").Value.ToString)
+                    End If
+
+                    strSql &= "',USUA_Paterno='" & xNode.Attributes("USUA_Paterno").Value &
+                        "',USUA_Materno='" & xNode.Attributes("USUA_Materno").Value &
+                        "',USUA_Nombre='" & xNode.Attributes("USUA_Nombre").Value &
+                        "',USUA_PerfilPadreID=" & Val(xNode.Attributes("USUA_PerfilPadreID").Value) &
+                        ",USUA_Perfil=" & Val(xNode.Attributes("USUA_Perfil").Value) &
+                        ",USUA_Idioma='" & xNode.Attributes("USUA_Idioma").Value &
+                        "' WHERE  USUA_usuaID = " & intCode
+                    cDatos.sExecuteSql(strSql)
+                End If
+
+                If strAccion = "C" OrElse strAccion = "A" Then
+                    'INICIO Detalle
+                    For Each xNode In xDoc.SelectNodes("paraUsuario/paraPermiso")
+                        Select Case xNode.Attributes("Accion").Value
+                            Case "A"
+                                strSql = " INSERT INTO paraPermiso (PERM_UsuaID,PERM_ModuID,PERM_Acceso,PERM_Date) " &
+                                    "SELECT " & intCode &
+                                    "," & xNode.Attributes("MODU_moduId").Value &
+                                    ",'" & xNode.Attributes("Acceso").Value & "'," & gstrFechaHoy
+                                cDatos.sExecuteSql(strSql)
+                            Case "C"
+                                strSql = "UPDATE paraPermiso SET PERM_Acceso='" & xNode.Attributes("Acceso").Value &
+                                "', PERM_Date=" & gstrFechaHoy & " WHERE PERM_permID=" &
+                                xNode.Attributes("PERM_permID").Value
+                                cDatos.sExecuteSql(strSql)
+                            Case "B"
+                                strSql = "UPDATE paraPermiso SET PERM_Estatus= 'B' " &
+                                "', PERM_Date=" & gstrFechaHoy & " WHERE PERM_permID=" &
+                                xNode.Attributes("PERM_permID").Value
+                                cDatos.sExecuteSql(strSql)
+                        End Select
+                    Next
+                    'FIN Detalle
+                    'INICIO Permisos varios
+                    For Each xNode In xDoc.SelectNodes("paraUsuario/paraPermisoVario")
+                        Select Case xNode.Attributes("Accion").Value
+                            Case "A"
+                                strSql = " INSERT INTO paraPermisoVario (PERC_UsuaID,PERC_CataID,PERC_UsuaDate)" &
+                                        " SELECT " & intCode & "," & xNode.Attributes("PERC_CataID").Value & "," & gstrFechaHoy
+                                cDatos.sExecuteSql(strSql)
+                                'Case "C"
+                                '    strSql = "UPDATE paraPermisoVario SET PERC_Estatus='B' " &
+                                '    "', PERC_UsuaDate='" & Format(Now, gstrFormatoBDFechaABC) &
+                                '    "' WHERE PERC_PercId=" & xNode.Attributes("PERC_PercId").Value
+                                '    cDatos.sExecuteSql(strSql)
+                            Case "B"
+                                strSql = "UPDATE paraPermisoVario SET PERC_Estatus='B' " &
+                                ",PERC_UsuaDate=" & gstrFechaHoy &
+                                " WHERE PERC_PercId=" & xNode.Attributes("PERC_PercId").Value
+                                cDatos.sExecuteSql(strSql)
+
+                        End Select
+                    Next
+                    'FIN Permisos varios
+                End If
+                cDatos.cnAbierta = bolOriginalcnAbierta
+                If bolOriginalcnAbierta = False Then
+                    cDatos.Close()
+                End If
+                If strAccion = "A" Then
+                    Return dtResultado
+                Else
+                    Return Nothing
+                End If
+            Case Else
+                strSql = "pa_USUA_abcparaUsuario " & intCode & ",'" & strXml & "'," & intUsrId & ",'" & strIpAddress & "'"
+                If intCode = 0 Then
+                    Return cDatos.fGetDataTable(strSql)
+                Else
+                    cDatos.sExecuteSql(strSql)
+                    Return New DataTable
+                End If
+        End Select
+    End Function
