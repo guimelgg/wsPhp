@@ -44,7 +44,7 @@ function pa_USUA_abcparaUsuario($intCode,$strXml,$intUsrId,$strIpAddress){
     // $strXml;
     $xDoc= new SimpleXMLElement($strXml);
     //$strAccion=$xDoc->paraUsuario['Accion'];
-    $tblNombre=$xDoc->paraUsuario;
+    $paraUsuario=$xDoc->paraUsuario;
     $strAccion=$paraUsuario['Accion'];
 
     switch($strAccion) {
@@ -257,7 +257,71 @@ function pa_BDSI_consultaparaBdSincroniza($Accion,$Code1,$Parametro1,$Parametro2
     return null;
   }
 }
+function pa_PROD_abcIngProducto($intCode,$strXml,$intUsrId,$strIpAddress){
+  global $db;
+  global $gstrFechaHoy;
+  if ($db) {
+    $xDoc= new SimpleXMLElement($strXml);
+    foreach ($xDoc->IngProducto as $tblNombre) {
+      $strAccion=(empty($tblNombre['Accion']) ? "A" : $tblNombre['Accion']);
+      switch ($strAccion) {
+        case "A":
+        $strSql="INSERT INTO IngProducto (PROD_Clave,PROD_Desc2,PROD_Desc3,PROD_CodBarras,PROD_UsuaID,PROD_LineaID,PROD_Clas1ID,PROD_Clas2ID,PROD_Clas3ID,PROD_Desc1,PROD_Unidad,PROD_EstatusID,PROD_DescVenta,PROD_UsuaDate)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,$gstrFechaHoy)";
+          $stmt = $db->prepare($strSql);
+          $stmt->execute([$tblNombre['PROD_Clave'],$tblNombre['PROD_Desc2'],$tblNombre['PROD_Desc3'],$tblNombre['PROD_CodBarras'],$intUsrId,$tblNombre['PROD_LineaID'],$tblNombre['PROD_Clas1ID'],$tblNombre['PROD_Clas2ID'],$tblNombre['PROD_Clas3ID'],$tblNombre['PROD_Desc1'],$tblNombre['PROD_Unidad'],$tblNombre['PROD_EstatusID'],$tblNombre['PROD_DescVenta']]);
+          $intCode=$db->lastInsertId();
+          break;
+        case "C":
+          $strSql="UPDATE IngProducto SET PROD_UsuaDate=$gstrFechaHoy ,PROD_Clave=:PROD_Clave,PROD_Desc2=:PROD_Desc2,PROD_Desc3=:PROD_Desc3,PROD_CodBarras=:PROD_CodBarras,PROD_UsuaID=:PROD_UsuaID
+          ,PROD_LineaID=:PROD_LineaID,PROD_Clas1ID=:PROD_Clas1ID,PROD_Clas2ID=:PROD_Clas2ID,PROD_Clas3ID=:PROD_Clas3ID,PROD_Desc1=:PROD_Desc1,PROD_Unidad=:PROD_Unidad,PROD_EstatusID=:PROD_EstatusID
+          ,PROD_DescVenta=:PROD_DescVenta WHERE PROD_ProdID=:PROD_ProdID";
+          $stmt = $db->prepare($strSql);
+          $stmt->bindParam(':PROD_Clave' , $tblNombre['PROD_Clave'], PDO::PARAM_STR);
+          $stmt->bindParam(':PROD_Desc2' , $tblNombre['PROD_Desc2'], PDO::PARAM_STR);
+          $stmt->bindParam(':PROD_Desc3' , $tblNombre['PROD_Desc3'], PDO::PARAM_STR);
+          $stmt->bindParam(':PROD_CodBarras' , $tblNombre['PROD_CodBarras'], PDO::PARAM_STR);
+          $stmt->bindParam(':PROD_UsuaID' , intval($intUsrId), PDO::PARAM_INT);
+          $stmt->bindParam(':PROD_LineaID' , $tblNombre['PROD_LineaID'], PDO::PARAM_INT);
+          $stmt->bindParam(':PROD_Clas1ID' , $tblNombre['PROD_Clas1ID'], PDO::PARAM_INT);
+          $stmt->bindParam(':PROD_Clas2ID' , $tblNombre['PROD_Clas2ID'], PDO::PARAM_INT);
+          $stmt->bindParam(':PROD_Clas3ID' , $tblNombre['PROD_Clas3ID'], PDO::PARAM_INT);
+          $stmt->bindParam(':PROD_Desc1' , $tblNombre['PROD_Desc1'], PDO::PARAM_STR);
+          $stmt->bindParam(':PROD_Unidad' , $tblNombre['PROD_Unidad'], PDO::PARAM_STR);
+          $stmt->bindParam(':PROD_EstatusID' , $tblNombre['PROD_EstatusID'], PDO::PARAM_INT);
+          $stmt->bindParam(':PROD_DescVenta' , $tblNombre['PROD_DescVenta'], PDO::PARAM_STR);
+          $stmt->bindParam(':PROD_ProdID' , intval($intCode), PDO::PARAM_INT);
+          $stmt->execute();
+          break;
+        case "B":
+          $strSql="UPDATE IngProducto SET PROD_UsuaDate=$gstrFechaHoy,PROD_Estatus='B', PROD_UsuaID=:PROD_UsuaID WHERE PROD_ProdID=:PROD_ProdID";
+          $stmt = $db->prepare($strSql);
+          $stmt->bindParam(':PROD_UsuaID' , intval($intUsrId), PDO::PARAM_INT);
+          $stmt->bindParam(':PROD_ProdID' , intval($intCode), PDO::PARAM_INT);
+          $stmt->execute();
+          break;
+        case "TabPageCostos":
+          $strSql="UPDATE IngProducto SET PROD_UsuaDate=$gstrFechaHoy, PROD_UsuaID=:PROD_UsuaID,PROD_CostoPromedio=:PROD_CostoPromedio,PROD_CostoUltimo=:PROD_CostoUltimo WHERE PROD_ProdID=:PROD_ProdID";
+          $stmt = $db->prepare($strSql);
+          $stmt->bindParam(':PROD_UsuaID' , intval($intUsrId), PDO::PARAM_INT);
+          $stmt->bindParam(':PROD_CostoPromedio' , $tblNombre['PROD_CostoPromedio'], PDO::PARAM_STR);
+          $stmt->bindParam(':PROD_CostoUltimo' , $tblNombre['PROD_CostoUltimo'], PDO::PARAM_STR);
+          $stmt->bindParam(':PROD_ProdID' , intval($intCode), PDO::PARAM_INT);
+          $stmt->execute();
+          break;
+        case "TabPageVentas":
+          foreach ($xDoc->IngProducto->VtaPrecio as $tblDetalle) {
+            sVtaPrecioABC($tblDetalle['Accion'],$tblDetalle['PREC_LpreID'],$intCode,$tblDetalle['PREC_Precio'],$tblDetalle['PREC_PrecID'],$intUsrId,$tblDetalle['PREC_Descuento']);
+          }
+        break;
+      }
+    }
+  }
+  return $intCode;
+}
+function sVtaPrecioABC($strAccion,$intCode,$intPREC_ProdID,$dblPREC_Precio,$intPREC_PrecID,$intUsrId,$dblPREC_Descuento){
 
+}
 // Template abc uno a muchos
 function pa_XXXX_abctblNombre($intCode,$strXml,$intUsrId,$strIpAddress){
   global $db;
@@ -297,19 +361,19 @@ function pa_XXXX_abctblNombre($intCode,$strXml,$intUsrId,$strIpAddress){
           $strSql="INSERT INTO paraPermiso (PERM_UsuaID,PERM_ModuID,PERM_Acceso,PERM_Date)
             VALUES (?,?,?,$gstrFechaHoy)";
             $stmt = $db->prepare($strSql);
-            $stmt->execute([intval($intCode),$paraPermiso['MODU_moduId'],$paraPermiso['Acceso']]);
+            $stmt->execute([intval($intCode),$tblDetalle['MODU_moduId'],$tblDetalle['Acceso']]);
             break;
           case "C":
             $strSql="UPDATE paraPermiso SET PERM_Date=$gstrFechaHoy,PERM_Acceso=:PERM_Acceso WHERE PERM_permID=:PERM_permID";
             $stmt = $db->prepare($strSql);
-            $stmt->bindParam(':PERM_Acceso' , $paraPermiso['Acceso'], PDO::PARAM_STR);
-            $stmt->bindParam(':PERM_permID' , intval($paraPermiso['PERM_permID']), PDO::PARAM_INT);
+            $stmt->bindParam(':PERM_Acceso' , $tblDetalle['Acceso'], PDO::PARAM_STR);
+            $stmt->bindParam(':PERM_permID' , intval($tblDetalle['PERM_permID']), PDO::PARAM_INT);
             $stmt->execute();
             break;
           case "B":
             $strSql="UPDATE paraPermiso SET PERM_Date=$gstrFechaHoy,PERM_Estatus='B' WHERE PERM_permID=:PERM_permID";
             $stmt = $db->prepare($strSql);
-            $stmt->bindParam(':PERM_permID' , intval($paraPermiso['PERM_permID']), PDO::PARAM_INT);
+            $stmt->bindParam(':PERM_permID' , intval($tblDetalle['PERM_permID']), PDO::PARAM_INT);
             $stmt->execute();
             break;
         }
@@ -319,4 +383,5 @@ function pa_XXXX_abctblNombre($intCode,$strXml,$intUsrId,$strIpAddress){
   }
   return $intCode;
 }
+
 ?>
