@@ -320,7 +320,38 @@ function pa_PROD_abcIngProducto($intCode,$strXml,$intUsrId,$strIpAddress){
   return $intCode;
 }
 function sVtaPrecioABC($strAccion,$intCode,$intPREC_ProdID,$dblPREC_Precio,$intPREC_PrecID,$intUsrId,$dblPREC_Descuento){
-
+  global $db;
+  global $gstrFechaHoy;
+  if ($db) {
+    switch ($strAccion) {
+      case "A":
+        $strSql="INSERT INTO VtaPrecio (PREC_LpreID,PREC_ProdID,PREC_Precio,PREC_UsuaID,PREC_Descuento,PREC_UsuaDate)
+        VALUES (?,?,?,?,?,$gstrFechaHoy)";
+        $stmt = $db->prepare($strSql);
+        $stmt->execute([$intCode,$intPREC_ProdID,$dblPREC_Precio,$intUsrId,$dblPREC_Descuento]);
+        break;
+      case "C":
+        $strSql="UPDATE VtaPrecio SET PREC_UsuaDate=$gstrFechaHoy, PREC_LpreID=:PREC_LpreID,PREC_ProdID=:PREC_ProdID,PREC_Precio=:PREC_Precio
+        ,PREC_UsuaID=:PREC_UsuaID,PREC_Descuento=:PREC_Descuento WHERE PREC_PrecID=:PREC_PrecID"
+        $stmt = $db->prepare($strSql);
+        $stmt->bindParam(':PREC_LpreID' , intval($intCode), PDO::PARAM_INT);
+        $stmt->bindParam(':PREC_ProdID' , intval($intPREC_ProdID), PDO::PARAM_INT);
+        $stmt->bindParam(':PREC_Precio' , $dblPREC_Precio, PDO::PARAM_STR);
+        $stmt->bindParam(':PREC_UsuaID' , intval($intUsrId), PDO::PARAM_INT);
+        $stmt->bindParam(':PREC_Descuento' , $dblPREC_Descuento, PDO::PARAM_STR);
+        $stmt->bindParam(':PREC_PrecID' , intval($intPREC_PrecID), PDO::PARAM_INT);
+        $stmt->execute();
+        break;
+      case "C":
+        $strSql="UPDATE VtaPrecio SET PREC_UsuaDate=$gstrFechaHoy,PREC_Estatus = 'B'
+        ,PREC_UsuaID=:PREC_UsuaID WHERE PREC_PrecID=:PREC_PrecID"
+        $stmt = $db->prepare($strSql);
+        $stmt->bindParam(':PREC_PrecID' , intval($intPREC_PrecID), PDO::PARAM_INT);
+        $stmt->bindParam(':PREC_UsuaID' , intval($intUsrId), PDO::PARAM_INT);
+        $stmt->execute();
+        break;
+    }
+  }
 }
 // Template abc uno a muchos
 function pa_XXXX_abctblNombre($intCode,$strXml,$intUsrId,$strIpAddress){
