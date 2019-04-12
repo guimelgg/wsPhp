@@ -187,8 +187,6 @@ function pa_CATA_abcparaCatalogo($intCode,$strXml,$intUsrId,$strIpAddress){
       $intCATA_Code1=(empty($tblDetalle['CATA_Code1']) ? 0 : $tblDetalle['CATA_Code1']);
       $intCATA_Code2=(empty($tblDetalle['CATA_Code2']) ? 0 : $tblDetalle['CATA_Code2']);
       $strAccion=(empty($tblDetalle['Accion']) ? "A" : $tblDetalle['Accion']);
-
-
       switch ($strAccion) {
         case "A":
         $strSql="INSERT INTO paraCatalogo (CATA_Tipo,CATA_Desc1,CATA_Desc2,CATA_Desc3,CATA_Desc4,CATA_Code1,CATA_Code2,CATA_UsuaID,CATA_UsuaDate)
@@ -266,7 +264,7 @@ function pa_PROD_abcIngProducto($intCode,$strXml,$intUsrId,$strIpAddress){
       $strAccion=(empty($tblNombre['Accion']) ? "A" : $tblNombre['Accion']);
       switch ($strAccion) {
         case "A":
-        $strSql="INSERT INTO IngProducto (PROD_Clave,PROD_Desc2,PROD_Desc3,PROD_CodBarras,PROD_UsuaID,PROD_LineaID,PROD_Clas1ID,PROD_Clas2ID,PROD_Clas3ID,PROD_Desc1,PROD_Unidad,PROD_EstatusID,PROD_DescVenta,PROD_UsuaDate)
+          $strSql="INSERT INTO IngProducto (PROD_Clave,PROD_Desc2,PROD_Desc3,PROD_CodBarras,PROD_UsuaID,PROD_LineaID,PROD_Clas1ID,PROD_Clas2ID,PROD_Clas3ID,PROD_Desc1,PROD_Unidad,PROD_EstatusID,PROD_DescVenta,PROD_UsuaDate)
           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,$gstrFechaHoy)";
           $stmt = $db->prepare($strSql);
           $stmt->execute([$tblNombre['PROD_Clave'],$tblNombre['PROD_Desc2'],$tblNombre['PROD_Desc3'],$tblNombre['PROD_CodBarras'],$intUsrId,$tblNombre['PROD_LineaID'],$tblNombre['PROD_Clas1ID'],$tblNombre['PROD_Clas2ID'],$tblNombre['PROD_Clas3ID'],$tblNombre['PROD_Desc1'],$tblNombre['PROD_Unidad'],$tblNombre['PROD_EstatusID'],$tblNombre['PROD_DescVenta']]);
@@ -313,11 +311,193 @@ function pa_PROD_abcIngProducto($intCode,$strXml,$intUsrId,$strIpAddress){
           foreach ($xDoc->IngProducto->VtaPrecio as $tblDetalle) {
             sVtaPrecioABC($tblDetalle['Accion'],$tblDetalle['PREC_LpreID'],$intCode,$tblDetalle['PREC_Precio'],$tblDetalle['PREC_PrecID'],$intUsrId,$tblDetalle['PREC_Descuento']);
           }
-        break;
+          break;
+        case "TabPageContenido":
+          $intProdID=$tblNombre['ProdID'];
+          $intPvarID=$tblNombre['PvarID'];
+          $strTipo=$tblNombre['Tipo'];
+          foreach ($xDoc->IngProducto->IngProductoContenido as $tblDetalle) {
+            $strValor1=(empty($tblDetalle['Valor1']) ? '' : $tblDetalle['Valor1']);
+            $strValor2=(empty($tblDetalle['Valor2']) ? '' : $tblDetalle['Valor2']);
+            //Creamos PvarID
+            if (intval($tblDetalle['ICON_PvarID'])===0 && $strValor1 !== ""){
+              $tblDetalle['ICON_PvarID']= fInsertIngProductoVariable(intval($tblDetalle['ICON_ProdID']),"",$strValor1, $strValor2, "", $intUsrId);
+            }
+            if ($strTipo = "CONTENIDO"){
+              sIngProductoContenidoABC($tblDetalle['Accion'],intval($tblDetalle['ICON_IConID']),$intProdID,$intPvarID,intval($tblDetalle['ICON_ProdID']),intval($tblDetalle['ICON_PvarID']),$tblDetalle['ICON_Cantidad'],$intUsrId);
+            } else {//DERIVADO
+              sIngProductoContenidoABC($tblDetalle['Accion'],intval($tblDetalle['ICON_IConID']),intval($tblDetalle['ICON_ProdID']),intval($tblDetalle['ICON_PvarID']),$intProdID,$intPvarID,$tblDetalle['ICON_Cantidad'],$intUsrId);
+            }
+          }
+          break;
+        case "TabPageCompras":
+          $intPvarID=$tblNombre['PvarID'];
+          foreach ($xDoc->IngProducto->ComProductoProveedor as $tblDetalle) {
+            switch ($tblDetalle['Accion']) {
+              case 'A':
+                strSql = "INSERT INTO ComProductoProveedor (PTPR_ProdID,PTPR_PvarID,PTPR_ProvID,PTPR_Default,PTPR_ClaveProv,PTPR_MonedaID,PTPR_Precio,PTPR_Fecha,PTPR_Obs,PTPR_UsuaID,PTPR_UsuaDate)
+                VALUES (?,?,?,?,?,?,?,?,?,?,$gstrFechaHoy)";
+                $stmt = $db->prepare($strSql);
+                $stmt->execute([$intCode,$intPvarID,$tblDetalle['PTPR_ProvID'],$tblDetalle['PTPR_Default'],$tblDetalle['PTPR_ClaveProv'],$tblDetalle['PTPR_MonedaID'],$tblDetalle['PTPR_Precio'],$tblDetalle['PTPR_Fecha'],$tblDetalle['PTPR_Obs'],$intUsrId]);
+                break;
+              case 'C':
+                $strSql = "UPDATE ComProductoProveedor SET
+                  PTPR_ProvID=:PTPR_ProvID,PTPR_Default=:PTPR_Default,PTPR_ClaveProv=:PTPR_ClaveProv,PTPR_MonedaID=:PTPR_MonedaID
+                  ,PTPR_Precio=:PTPR_Precio,PTPR_Fecha=:PTPR_Fecha,PTPR_Obs=:PTPR_Obs,PTPR_UsuaID=:PTPR_UsuaID,PTPR_UsuaDate=$gstrFechaHoy
+                  WHERE PTPR_PtprID=:PTPR_PtprID";
+                $stmt = $db->prepare($strSql);
+                $stmt->bindParam(':PTPR_PtprID' , $tblDetalle['PTPR_PtprID'], PDO::PARAM_INT);
+                $stmt->bindParam(':PTPR_ProvID' , $tblDetalle['PTPR_ProvID'], PDO::PARAM_INT);
+                $stmt->bindParam(':PTPR_Default' , $tblDetalle['PTPR_Default'], PDO::PARAM_INT);
+                $stmt->bindParam(':PTPR_ClaveProv' , $tblDetalle['PTPR_ClaveProv'], PDO::PARAM_STR);
+                $stmt->bindParam(':PTPR_MonedaID' , $tblDetalle['PTPR_MonedaID'], PDO::PARAM_INT);
+                $stmt->bindParam(':PTPR_Precio' , $tblDetalle['PTPR_Precio'], PDO::PARAM_STR);
+                $stmt->bindParam(':PTPR_Fecha' , $tblDetalle['PTPR_Fecha'], PDO::PARAM_STR);
+                $stmt->bindParam(':PTPR_Obs' , $tblDetalle['PTPR_Obs'], PDO::PARAM_STR);
+                $stmt->bindParam(':PTPR_UsuaID' , intval($intUsrId), PDO::PARAM_INT);
+                $stmt->execute();
+                break;
+              case 'B':
+                $strSql = "UPDATE ComProductoProveedor SET PTPR_Estatus = 'B'
+                  ,PTPR_UsuaID=:PTPR_UsuaID,PTPR_UsuaDate=$gstrFechaHoy
+                  WHERE PTPR_PtprID=:PTPR_PtprID";
+                $stmt = $db->prepare($strSql);
+                $stmt->bindParam(':PTPR_PtprID' , $tblDetalle['PTPR_PtprID'], PDO::PARAM_INT);
+                $stmt->bindParam(':PTPR_UsuaID' , intval($intUsrId), PDO::PARAM_INT);
+                $stmt->execute();
+                break;
+            }
+          }
+          break;
+        case "InvProductoAlmacen":
+          $intPvarID=$tblNombre['PvarID'];
+          $intAlmacenID=0;
+          //Dependiendo de la Linea se obtiene el Almacen
+          $strSql = "SELECT CATA_Code1 AlmacenID FROM IngProducto INNER JOIN paraCatalogo ON PROD_LineaID=CATA_CataID AND CATA_Tipo='LINEA' AND PROD_ProdID=:PROD_ProdID";
+          $stmt = $db->prepare($strSql);
+          $stmt->bindParam(':PROD_ProdID' , intval($intCode), PDO::PARAM_INT);
+          $result = $stmt->execute();
+          while($row=$result->fetchArray()){
+            $intAlmacenID=$row['AlmacenID'];
+          }
+          if ($intAlmacenID>0)    {
+            $intPtalID=0;
+            strSql = "SELECT PTAL_PtalID,PTAL_Rm,PTAL_CuotaMensual FROM InvProductoAlmacen WHERE PTAL_Estatus='A' AND PTAL_AlmacenCataID=:PTAL_AlmacenCataID AND PTAL_ProdID=:PTAL_ProdID AND PTAL_PvarID=:PTAL_PvarID";
+            $stmt = $db->prepare($strSql);
+            $stmt->bindParam(':PTAL_AlmacenCataID' , intval($intAlmacenID), PDO::PARAM_INT);
+            $stmt->bindParam(':PTAL_ProdID' , intval($intCode), PDO::PARAM_INT);
+            $stmt->bindParam(':PTAL_PvarID' , intval($intPvarID), PDO::PARAM_INT);
+            $result = $stmt->execute();
+            $intCuotaMensual=0;
+            $intRm=0;
+            while($row=$result->fetchArray()){
+              $intPtalID=$row['PTAL_PtalID'];
+              $intCuotaMensual=$row['PTAL_CuotaMensual'];
+              $intRm=$row['PTAL_Rm'];
+            }
+            if ($intPtalID == 0){
+              $strSql="INSERT INTO InvProductoAlmacen(PTAL_AlmacenCataID,PTAL_ProdId,PTAL_PvarID,PTAL_Rm,PTAL_CuotaMensual,PTAL_UsuaDate)
+                VALUES (?,?,?,?,?,$gstrFechaHoy)";
+                $stmt = $db->prepare($strSql);
+                $stmt->execute([$intAlmacenID,$intCode,$intPvarID,$tblNombre['PTAL_Rm'],$tblNombre['PTAL_CuotaMensual']]);
+
+            } else if ($intCuotaMensual != $tblNombre['PTAL_CuotaMensual'] || $intRm != $tblNombre['PTAL_Rm']) {
+              $strSql = "UPDATE InvProductoAlmacen SET PTAL_Rm=:PTAL_Rm,PTAL_CuotaMensual=:PTAL_CuotaMensual
+                   ,PTAL_UsuaDate=$gstrFechaHoy,PTAL_UsuaID=:PTAL_UsuaID
+                   WHERE PTAL_PtalID=:PTAL_PtalID";
+               $stmt = $db->prepare($strSql);
+               $stmt->bindParam(':PTAL_Rm' , $tblNombre['PTAL_Rm'], PDO::PARAM_INT);
+               $stmt->bindParam(':PTAL_CuotaMensual' , $tblNombre['PTAL_CuotaMensual'], PDO::PARAM_INT);
+               $stmt->bindParam(':PTAL_UsuaID' , intval($intUsrId), PDO::PARAM_INT);
+               $stmt->execute();
+            }
+          }
+          break;
+          default:
+            if ($strAccion=="C" || $strAccion=="A" && $intCode > 0){
+
+            }
+          break;
       }
     }
   }
   return $intCode;
+}
+function fInsertIngProductoVariable($PVAR_ProdID,$PVAR_CodBarras,$PVAR_Valor1,$PVAR_Valor2,$PVAR_Valor3,$PVAR_UsuaID){
+  $intPvarID=0;
+  $result = pa_PROD_ConsultaIngProducto("GETPVAR", $PVAR_ProdID, $PVAR_Valor1, $PVAR_Valor2);
+  while($row=$result->fetchArray()){
+    $intPvarID=$row['PVAR_PvarID'];
+  }
+  if ($intPvarID=0){
+    global $db;
+    global $gstrFechaHoy;
+    if ($db) {
+      $strSql="INSERT INTO IngProductoVariable (PVAR_ProdID,PVAR_CodBarras,PVAR_Valor1,PVAR_Valor2,PVAR_Valor3,PVAR_UsuaID,PVAR_UsuaDate)
+      VALUES (?,?,?,?,?,?,$gstrFechaHoy)";
+      $stmt = $db->prepare($strSql);
+      $stmt->execute([$PVAR_ProdID,$PVAR_CodBarras,$PVAR_Valor1,$PVAR_Valor2,$PVAR_Valor3,$PVAR_UsuaID]);
+      $intPvarID=$db->lastInsertId();
+    }
+  }
+  return $intPvarID;
+}
+function sIngProductoContenidoABC($strAccion, $intICON_IConID,$intICON_ProdIDP,$intICON_PvarIDP,$intICON_ProdIDH,$intICON_PvarIDH,$dblICON_Cantidad,$intUsrId) {
+  global $db;
+  if ($db) {
+    switch ($strAccion) {
+      case "A":
+        $strSql="INSERT INTO IngProductoContenido (ICON_ProdIDP,ICON_PvarIDP,ICON_ProdIDH,ICON_PvarIDH,ICON_Cantidad,ICON_UsuaID,ICON_UsuaDate)
+        VALUES (?,?,?,?,?,?,$gstrFechaHoy)";
+        $stmt = $db->prepare($strSql);
+        $stmt->execute([$intICON_ProdIDP,$intICON_PvarIDP,$intICON_ProdIDH,$intICON_PvarIDH,$dblICON_Cantidad,$intUsrId]);
+        break;
+      case "C":
+        $strSql = "UPDATE IngProductoContenido SET
+          ICON_ProdIDP=:ICON_ProdIDP,ICON_PvarIDP=:ICON_PvarIDP,ICON_ProdIDH=:ICON_ProdIDH,ICON_PvarIDH=:ICON_PvarIDH,ICON_Cantidad=:ICON_Cantidad,ICON_UsuaDate=$gstrFechaHoy,ICON_UsuaID=:ICON_UsuaID
+          WHERE ICON_IConID=:ICON_IConID";
+        $stmt = $db->prepare($strSql);
+        $stmt->bindParam(':ICON_IConID' , $intICON_IConID, PDO::PARAM_INT);
+        $stmt->bindParam(':ICON_ProdIDP' , $intICON_ProdIDP, PDO::PARAM_INT);
+        $stmt->bindParam(':ICON_PvarIDP' , $intICON_PvarIDP, PDO::PARAM_INT);
+        $stmt->bindParam(':ICON_ProdIDH' , $intICON_ProdIDH, PDO::PARAM_INT);
+        $stmt->bindParam(':ICON_PvarIDH' , $intICON_PvarIDH, PDO::PARAM_INT);
+        $stmt->bindParam(':ICON_Cantidad' , $dblICON_Cantidad, PDO::PARAM_STR);
+        $stmt->bindParam(':ICON_UsuaID' , intval($intUsrId), PDO::PARAM_INT);
+        $stmt->execute();
+        break;
+      case "B":
+        $strSql = "UPDATE IngProductoContenido SET ICON_Estatus = 'B'
+        ,ICON_UsuaDate=$gstrFechaHoy,ICON_UsuaID=:ICON_UsuaID
+        WHERE ICON_IConID=:ICON_IConID";
+        $stmt = $db->prepare($strSql);
+        $stmt->bindParam(':ICON_IConID' , $intICON_IConID, PDO::PARAM_INT);
+        $stmt->bindParam(':ICON_UsuaID' , intval($intUsrId), PDO::PARAM_INT);
+        $stmt->execute();
+        break;
+    }
+  }
+}
+function pa_PROD_ConsultaIngProducto($Accion,$Code1,$Parametro1,$Parametro2){
+  global $db;
+  if ($db) {
+    switch ($strAccion) {
+      case "GETPVAR":
+        $strSql="SELECT PVAR_PvarID FROM IngProductoVariable WHERE PVAR_ProdID=:Code1
+         AND PVAR_Estatus='A' AND CASE WHEN PVAR_Valor1 IS NULL OR PVAR_Valor1='' THEN '' ELSE PVAR_Valor1 END=:Parametro1
+         AND CASE WHEN PVAR_Valor2 IS NULL OR PVAR_Valor2='' THEN '' ELSE PVAR_Valor2 END=:Parametro2";
+        $stmt = $db->prepare($strSql);
+        $stmt->bindParam(':Parametro1' , $Parametro1, PDO::PARAM_STR);
+        $stmt->bindParam(':Parametro2',$Parametro2, PDO::PARAM_STR);
+        $stmt->bindParam(':Code1' , intval($Code1), PDO::PARAM_INT);
+      break;
+    }
+    $stmt->execute();
+    return $stmt;
+  } else {
+    return null;
+  }
+
 }
 function sVtaPrecioABC($strAccion,$intCode,$intPREC_ProdID,$dblPREC_Precio,$intPREC_PrecID,$intUsrId,$dblPREC_Descuento){
   global $db;
@@ -342,7 +522,7 @@ function sVtaPrecioABC($strAccion,$intCode,$intPREC_ProdID,$dblPREC_Precio,$intP
         $stmt->bindParam(':PREC_PrecID' , intval($intPREC_PrecID), PDO::PARAM_INT);
         $stmt->execute();
         break;
-      case "C":
+      case "B":
         $strSql="UPDATE VtaPrecio SET PREC_UsuaDate=$gstrFechaHoy,PREC_Estatus = 'B'
         ,PREC_UsuaID=:PREC_UsuaID WHERE PREC_PrecID=:PREC_PrecID"
         $stmt = $db->prepare($strSql);
