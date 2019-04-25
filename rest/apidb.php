@@ -1,35 +1,35 @@
 <?php
-$strDBName = filter_input(INPUT_GET,'strDBName');
+$strDBName = filter_input(INPUT_GET, 'strDBName');
 if (!$strDBName) {
-  $strDBName = filter_input(INPUT_POST,'strDBName');
+    $strDBName = filter_input(INPUT_POST, 'strDBName');
 }
 //$intCode
-$intCode = filter_input(INPUT_GET,'intCode');
+$intCode = filter_input(INPUT_GET, 'intCode');
 if (!$intCode) {
-  $intCode = filter_input(INPUT_POST,'intCode');
+    $intCode = filter_input(INPUT_POST, 'intCode');
 }
 //$strXml
-$strXml = filter_input(INPUT_GET,'strXml');
+$strXml = filter_input(INPUT_GET, 'strXml');
 if (!$strXml) {
-  $strXml = filter_input(INPUT_POST,'strXml');
+    $strXml = filter_input(INPUT_POST, 'strXml');
 }
 //$intUsrId
-$intUsrId = filter_input(INPUT_GET,'intUsrId');
+$intUsrId = filter_input(INPUT_GET, 'intUsrId');
 if (!$intUsrId) {
-  $intUsrId = filter_input(INPUT_POST,'intUsrId');
+    $intUsrId = filter_input(INPUT_POST, 'intUsrId');
 }
 //$strIpAddress
-$strIpAddress = filter_input(INPUT_GET,'strIpAddress');
+$strIpAddress = filter_input(INPUT_GET, 'strIpAddress');
 if (!$strIpAddress) {
-  $strIpAddress = filter_input(INPUT_POST,'strIpAddress');
+    $strIpAddress = filter_input(INPUT_POST, 'strIpAddress');
 }
 include('db.php');
 connectDB($strDBName);
 //echo ($db ? "db SI" : "db NO");
 if ($db) {
-  $gstrFechaHoy="strftime('%Y/%m/%d %H:%M:%S',datetime('now','localtime'))";
-  include('clsEnt.php');
-  switch ($strOpcion) {
+    $gstrFechaHoy="strftime('%Y/%m/%d %H:%M:%S',datetime('now','localtime'))";
+    include('clsEnt.php');
+    switch ($strOpcion) {
     case "GetFechaServer":
     $strSql="SELECT strftime('%d/%m/%Y %H:%M',datetime('now','localtime')) Fecha";
     $STH = $db->prepare($strSql);
@@ -40,22 +40,22 @@ if ($db) {
     $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));*/
     break;
     case "pa_USUA_consultaparaUsuario":
-    $result = pa_USUA_consultaparaUsuario($Accion,$Code1,$Parametro1,$Parametro2);
+    $result = pa_USUA_consultaparaUsuario($Accion, $Code1, $Parametro1, $Parametro2);
     $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
     break;
     case "pa_USUA_abcparaUsuario":
     $result= new \stdClass();
-    $result->Resultado = pa_USUA_abcparaUsuario($intCode,$strXml,$intUsrId,$strIpAddress);
+    $result->Resultado = pa_USUA_abcparaUsuario($intCode, $strXml, $intUsrId, $strIpAddress);
     $strResultado=json_encode($result);
     break;
     case "pa_MODU_abcparaModulo":
     $result= new \stdClass();
-    $result->Resultado = pa_MODU_abcparaModulo($intCode,$strXml,$intUsrId,$strIpAddress);
+    $result->Resultado = pa_MODU_abcparaModulo($intCode, $strXml, $intUsrId, $strIpAddress);
     $strResultado=json_encode($result);
     break;
     case "pa_CATA_abcparaCatalogo":
     $result= new \stdClass();
-    $result->Resultado = pa_CATA_abcparaCatalogo($intCode,$strXml,$intUsrId,$strIpAddress);
+    $result->Resultado = pa_CATA_abcparaCatalogo($intCode, $strXml, $intUsrId, $strIpAddress);
     $strResultado=json_encode($result);
     break;
     case "GetEsquema":
@@ -64,7 +64,7 @@ if ($db) {
     $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
     break;
     case "pa_BDSI_consultaparaBdSincroniza":
-    $strResultado = pa_BDSI_consultaparaBdSincroniza($Accion,$Code1,$Parametro1,$Parametro2);
+    $strResultado = pa_BDSI_consultaparaBdSincroniza($Accion, $Code1, $Parametro1, $Parametro2);
     break;
     default:
     $strSql="SELECT * FROM paraCatalogo WHERE CATA_CataID=102 ORDER BY CATA_CataID";
@@ -72,6 +72,5 @@ if ($db) {
     $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
     break;
   }
-  $db = NULL;
+    $db = null;
 }
-?>
