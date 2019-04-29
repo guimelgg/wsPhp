@@ -31,45 +31,50 @@ if ($db) {
     include('clsEnt.php');
     switch ($strOpcion) {
     case "GetFechaServer":
-    $strSql="SELECT strftime('%d/%m/%Y %H:%M',datetime('now','localtime')) Fecha";
-    $STH = $db->prepare($strSql);
-    $STH->execute();
-    $result= $STH->fetch();
-    $strResultado= $result["Fecha"];
-    /*$result = $db->query($strSql);
-    $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));*/
+        $strSql="SELECT strftime('%d/%m/%Y %H:%M',datetime('now','localtime')) Fecha";
+        $STH = $db->prepare($strSql);
+        $STH->execute();
+        $result= $STH->fetch();
+        $strResultado= $result["Fecha"];
+        /*$result = $db->query($strSql);
+        $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));*/
     break;
     case "pa_USUA_consultaparaUsuario":
-    $result = pa_USUA_consultaparaUsuario($Accion, $Code1, $Parametro1, $Parametro2);
-    $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
+        $result = pa_USUA_consultaparaUsuario($Accion, $Code1, $Parametro1, $Parametro2);
+        $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
     break;
     case "pa_USUA_abcparaUsuario":
-    $result= new \stdClass();
-    $result->Resultado = pa_USUA_abcparaUsuario($intCode, $strXml, $intUsrId, $strIpAddress);
-    $strResultado=json_encode($result);
+        $result= new \stdClass();
+        $result->Resultado = pa_USUA_abcparaUsuario($intCode, $strXml, $intUsrId, $strIpAddress);
+        $strResultado=json_encode($result);
     break;
     case "pa_MODU_abcparaModulo":
-    $result= new \stdClass();
-    $result->Resultado = pa_MODU_abcparaModulo($intCode, $strXml, $intUsrId, $strIpAddress);
-    $strResultado=json_encode($result);
+        $result= new \stdClass();
+        $result->Resultado = pa_MODU_abcparaModulo($intCode, $strXml, $intUsrId, $strIpAddress);
+        $strResultado=json_encode($result);
     break;
     case "pa_CATA_abcparaCatalogo":
-    $result= new \stdClass();
-    $result->Resultado = pa_CATA_abcparaCatalogo($intCode, $strXml, $intUsrId, $strIpAddress);
-    $strResultado=json_encode($result);
+        $result= new \stdClass();
+        $result->Resultado = pa_CATA_abcparaCatalogo($intCode, $strXml, $intUsrId, $strIpAddress);
+        $strResultado=json_encode($result);
     break;
     case "GetEsquema":
-    $strSql="SELECT BDES_Script FROM paraBdEsquema WHERE BDES_Fecha>".$Parametro1;
-    $result = $db->query($strSql);
-    $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
+        $strSql="SELECT BDES_Script FROM paraBdEsquema WHERE BDES_Fecha>".$Parametro1;
+        $result = $db->query($strSql);
+        $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
     break;
     case "pa_BDSI_consultaparaBdSincroniza":
-    $strResultado = pa_BDSI_consultaparaBdSincroniza($Accion, $Code1, $Parametro1, $Parametro2);
+        $strResultado = pa_BDSI_consultaparaBdSincroniza($Accion, $Code1, $Parametro1, $Parametro2);
+    break;
+    case "pa_PROD_abcIngProducto":
+        $result= new \stdClass();
+        $result->Resultado = pa_PROD_abcIngProducto($intCode, $strXml, $intUsrId, $strIpAddress);
+        $strResultado=json_encode($result);
     break;
     default:
-    $strSql="SELECT * FROM paraCatalogo WHERE CATA_CataID=102 ORDER BY CATA_CataID";
-    $result = $db->query($strSql);
-    $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
+        $strSql="SELECT * FROM paraCatalogo WHERE CATA_CataID=102 ORDER BY CATA_CataID";
+        $result = $db->query($strSql);
+        $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
     break;
   }
     $db = null;
