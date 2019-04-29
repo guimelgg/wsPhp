@@ -1,8 +1,9 @@
 Extensions a agregar:
 Settings Sync 3.2.9
-    Gist: 
-        Token:  111976e3936917a541faacf93fae5da6b12bec65
-        ID: ddb851848834b27441202ce257f9d63f
+    
+GitHub Token: ce3b9ba1454c2858e6144f391b5c23dbe1f15970
+GitHub Gist: 1ccf43a5e7a55c58c63516ba5f1617c7
+GitHub Gist Type: Secret
 
 php cs fixer 0.1.118
 PHP Debug 1.13.0
