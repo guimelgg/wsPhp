@@ -29,6 +29,7 @@ connectDB($strDBName);
 if ($db) {
     $gstrFechaHoy="strftime('%Y/%m/%d %H:%M:%S',datetime('now','localtime'))";
     include('clsEnt.php');
+    include('clsPos.php');
     switch ($strOpcion) {
     case "GetFechaServer":
         $strSql="SELECT strftime('%d/%m/%Y %H:%M',datetime('now','localtime')) Fecha";
@@ -71,6 +72,16 @@ if ($db) {
         $result->Resultado = pa_PROD_abcIngProducto($intCode, $strXml, $intUsrId, $strIpAddress);
         $strResultado=json_encode($result);
     break;
+    case "pa_LPRE_abcVtaListaDePrecio":
+        $result= new \stdClass();
+        $result->Resultado = pa_LPRE_abcVtaListaDePrecio($intCode, $strXml, $intUsrId, $strIpAddress);
+        $strResultado=json_encode($result);
+    break;
+    case "pa_INFI_abcInvFisico":
+        $result= new \stdClass();
+        $result->Resultado = pa_INFI_abcInvFisico($intCode, $strXml, $intUsrId, $strIpAddress);
+        $strResultado=json_encode($result);
+    break;    
     default:
         $strSql="SELECT * FROM paraCatalogo WHERE CATA_CataID=102 ORDER BY CATA_CataID";
         $result = $db->query($strSql);
