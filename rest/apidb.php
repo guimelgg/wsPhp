@@ -82,8 +82,14 @@ if ($db) {
         $result->Resultado = pa_INFI_abcInvFisico($intCode, $strXml, $intUsrId, $strIpAddress);
         $strResultado=json_encode($result);
     break;    
+    case "pa_MOIN_abcInvMovimiento":
+        $result= new \stdClass();
+        $result->Resultado = pa_MOIN_abcInvMovimiento($intCode, $strXml, $intUsrId, $strIpAddress);
+        $strResultado=json_encode($result);
+    break;    
     default:
-        $strSql="SELECT * FROM paraCatalogo WHERE CATA_CataID=102 ORDER BY CATA_CataID";
+        //$strSql="SELECT * FROM paraCatalogo WHERE CATA_CataID=102 ORDER BY CATA_CataID";
+        $strSql="SELECT MAX(INFI_Folio) AS Resultado FROM InvFisico WHERE INFI_AlmaId=34";
         $result = $db->query($strSql);
         $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
     break;
