@@ -1,5 +1,5 @@
 <?php
-$bolAfectaExistencia=TRUE;
+
 //IngProducto
 function pa_PROD_abcIngProducto($intCode, $strXml, $intUsrId, $strIpAddress)
 {
@@ -70,7 +70,7 @@ function pa_PROD_abcIngProducto($intCode, $strXml, $intUsrId, $strIpAddress)
                 if (intval($tblDetalle['ICON_PvarID'])===0 && $strValor1 !== "") {
                     $tblDetalle['ICON_PvarID']= fInsertIngProductoVariable(intval($tblDetalle['ICON_ProdID']), "", $strValor1, $strValor2, "", $intUsrId);
                 }
-                if ($strTipo = "CONTENIDO") {
+                if ($strTipo == "CONTENIDO") {
                     sIngProductoContenidoABC($tblDetalle['Accion'], intval($tblDetalle['ICON_IConID']), $intProdID, $intPvarID, intval($tblDetalle['ICON_ProdID']), intval($tblDetalle['ICON_PvarID']), $tblDetalle['ICON_Cantidad'], $intUsrId);
                 } else {//DERIVADO
                     sIngProductoContenidoABC($tblDetalle['Accion'], intval($tblDetalle['ICON_IConID']), intval($tblDetalle['ICON_ProdID']), intval($tblDetalle['ICON_PvarID']), $intProdID, $intPvarID, $tblDetalle['ICON_Cantidad'], $intUsrId);
@@ -208,7 +208,7 @@ function fInsertIngProductoVariable($PVAR_ProdID, $PVAR_CodBarras, $PVAR_Valor1,
     while ($row=$result->fetchArray()) {
         $intPvarID=$row['PVAR_PvarID'];
     }
-    if ($intPvarID=0) {
+    if ($intPvarID==0) {
         global $db;
         global $gstrFechaHoy;
         if ($db) {
@@ -317,7 +317,7 @@ function pa_LPRE_abcVtaListaDePrecio($intCode, $strXml, $intUsrId, $strIpAddress
             $stmt->execute();
           break;
         }
-        if ($strAccion="C" || $strAccion="A") {
+        if ($strAccion=="C" || $strAccion=="A") {
             //INICIO Detalle
             foreach ($xDoc->VtaListaDePrecio->VtaPrecio as $tblDetalle) {
                 sVtaPrecioABC($tblDetalle['Accion'], $intCode, $tblDetalle['PREC_ProdID'], $tblDetalle['PREC_Precio'], $tblDetalle['PREC_PrecID'], $intUsrId, $tblDetalle['PREC_Descuento']);
@@ -415,7 +415,7 @@ function pa_INFI_abcInvFisico($intCode, $strXml, $intUsrId, $strIpAddress)
                 $intEntradaId=intval($row['INFI_AEntradaId']);
                 $intSalidaId=intval($row['INFI_ASalidaId']);
             }
-            if ($strAccion="ABRIR") {
+            if ($strAccion=="ABRIR") {
                 $strSql = "UPDATE InvFisico SET INFI_Estatus='A'
                 ,INFI_UsuaDate=$gstrFechaHoy ,INFI_UsuaID=:INFI_UsuaID
                 WHERE INFI_AlmaId=:INFI_AlmaId
@@ -456,7 +456,7 @@ function pa_INFI_abcInvFisico($intCode, $strXml, $intUsrId, $strIpAddress)
                 $stmt = $db->prepare($strSql); 
                 $stmt->bindParam(':INFI_Fecha', $tblNombre['INFI_Fecha'], PDO::PARAM_STR);
                 $stmt->execute();  
-                if ($tblNombre['OPCION'] = "CIERRE") {
+                if ($tblNombre['OPCION'] == "CIERRE") {
                     $intNoReportados=0;
                     $strSql = "SELECT MAX(INFI_infiid) AS INFI_infiid FROM InvFisico WHERE INFI_Estatus<>'B' AND INFI_AlmaId=" . $tblNombre['INFI_AlmaId'] 
                     ." AND INFI_Fecha=:INFI_Fecha AND INFI_Obs='PRODUCTOS NO REPORTADOS'";
@@ -476,7 +476,7 @@ function pa_INFI_abcInvFisico($intCode, $strXml, $intUsrId, $strIpAddress)
                      AND InvFisico.INFI_Fecha=:INFI_Fecha 
                      AND InvFisico.INFI_Estatus<>'B'
                      AND InvFisico.INFI_InfiId<>$intNoReportados )";
-                    if ($intNoReportados = 0){
+                    if ($intNoReportados == 0){
                         $strSql = "SELECT * " . $strSqlPtNoRpt;
                         $stmt = $db->prepare($strSql); 
                         $stmt->bindParam(':INFI_Fecha', $tblNombre['INFI_Fecha'], PDO::PARAM_STR);
@@ -533,7 +533,7 @@ function pa_INFI_abcInvFisico($intCode, $strXml, $intUsrId, $strIpAddress)
                         $intCuantos=intval($row['Cuantos']);    
                     }                     
                     if ($intCuantos>0){
-                        if ($intEntradaId=0){
+                        if ($intEntradaId==0){
                             $intCATA_CataID=0;
                             $strSql = "SELECT CATA_CataID FROM paraCatalogo WHERE CATA_Estatus='A' AND CATA_Tipo='ALMACENMOV' AND CATA_Desc1='ENT.AJUSTE'";
                             $stmt = $db->prepare($strSql);                    
@@ -567,7 +567,7 @@ function pa_INFI_abcInvFisico($intCode, $strXml, $intUsrId, $strIpAddress)
                         $intCuantos=intval($row['Cuantos']);    
                     }                    
                     if ($intCuantos>0){
-                        if ($intSalidaId=0){
+                        if ($intSalidaId==0){
                             $intCATA_CataID=0;
                             $strSql = "SELECT CATA_CataID FROM paraCatalogo WHERE CATA_Estatus='A' AND CATA_Tipo='ALMACENMOV' AND CATA_Desc1='SAL.AJUSTE'";
                             $stmt = $db->prepare($strSql);                    
@@ -615,7 +615,7 @@ function pa_INFI_abcInvFisico($intCode, $strXml, $intUsrId, $strIpAddress)
           default:          
           break;
         }
-        if ($strAccion="C" || $strAccion="A") {
+        if ($strAccion=="C" || $strAccion=="A") {
             //INICIO Detalle
             foreach ($xDoc->InvFisico->InvFisicoDet as $tblDetalle) {
                 switch ($tblDetalle['Accion']) {
@@ -728,7 +728,7 @@ function pa_MOIN_abcInvMovimiento($intCode, $strXml, $intUsrId, $strIpAddress)
         }
         $intAlmacenId=$tblNombre['MOIN_AlmacenCataID'];
         //Si es traspaso de almacén recuperamos el Id de destino
-        if ($tblNombre['AlmDestino']){
+        if (($tblNombre['AlmDestino']) && (intval($tblNombre['AlmDestino']))>0){
             $intAlmacenIdTraspaso = intval($tblNombre['AlmDestino']);
             if ($tblNombre['ContDestino']){
                 $intContIDTraspaso=intval($tblNombre['ContDestino']);
@@ -762,16 +762,16 @@ function pa_MOIN_abcInvMovimiento($intCode, $strXml, $intUsrId, $strIpAddress)
             $stmt->execute([$tblNombre['MOIN_TipoMovCataID']]);
             $row= $stmt->fetch();
             if($row){
-                if ($row['CATA_Desc2']="S"){
+                if ($row['CATA_Desc2']=="S"){
                     $strSigno = "-";
-                }else if ($row['CATA_Desc2']="R"){
+                }else if ($row['CATA_Desc2']=="R"){
                     $strSigno = "-";
                     $bolReubicacion = TRUE;
                 }
             }            
         }
         //Si es C o B AFECTA LA EXISTENCIA ACTUAL
-        if (($strAccion = "C" && $xDoc->InvMovimiento->InvMovimientoDet) || $strAccion="B"){
+        if (($strAccion =="C" && $xDoc->InvMovimiento->InvMovimientoDet) || $strAccion=="B"){
             sMoinAfectaExistencia($intCode, $intAlmacenId, "-");            
             $bolAfectoExi = TRUE;
         }
@@ -779,6 +779,7 @@ function pa_MOIN_abcInvMovimiento($intCode, $strXml, $intUsrId, $strIpAddress)
         switch ($strAccion) {
           case "A":
             $intCode = fInsertInvMovimiento($tblNombre['MOIN_AlmacenCataID'],$tblNombre['MOIN_TipoMovCataID'],$tblNombre['MOIN_Fecha'],$tblNombre['MOIN_Obs'],$tblNombre['MOIN_Referencia'],$intUsrId, $strMOIN_Estatus);            
+            $bolAfectoExi=TRUE;
           break;
           case "B":
             $strSql="UPDATE InvMovimiento SET MOIN_Estatus= 'B' ,MOIN_UsuaDate=$gstrFechaHoy, MOIN_UsuaID=? WHERE MOIN_MoinId =?";
@@ -793,11 +794,11 @@ function pa_MOIN_abcInvMovimiento($intCode, $strXml, $intUsrId, $strIpAddress)
             $stmt->execute([$tblNombre['MOIN_Fecha'],$tblNombre['MOIN_Obs'],$tblNombre['MOIN_Referencia'],$intUsrId,$strMOIN_Estatus,$intCode]);            
           break;
         }
-        if ($strAccion="C" || $strAccion="A") {
+        if ($strAccion=="C" || $strAccion=="A") {
             //INICIO Detalle
             foreach ($xDoc->InvMovimiento->InvMovimientoDet as $tblDetalle) {
                 //Creamos PvarID
-                if ($tblDetalle['MODT_PvarID']=0 && $tblDetalle['Valor1'] != "" ){
+                if ($tblDetalle['MODT_PvarID']==0 && $tblDetalle['Valor1'] != "" ){
                     $tblDetalle['MODT_PvarID'] = fInsertIngProductoVariable($tblDetalle['MODT_ProdID'], "", $tblDetalle['Valor1'], $tblDetalle['Valor2'], "", $intUsrId);
                 }
                 switch ($tblDetalle['Accion']) {
@@ -845,6 +846,58 @@ function pa_MOIN_abcInvMovimiento($intCode, $strXml, $intUsrId, $strIpAddress)
             }      
             //FIN Detalle
         }
+        if ($bolAfectoExi) {//ACTUALIZAR LA EXISTENCIA
+            sMoinAfectaExistencia($intCode, $intAlmacenId, "+");
+        }
+        //Si es Traspaso se ejecuta lo sig.
+        if ($intAlmacenIdTraspaso>0){
+            $intReferencia=$tblNombre['MOIN_Referencia'];//La Referencia es el Id del Mov del Almacen destino
+            unset($tblNombre['AlmDestino']);//Quitamos el atributo Almacen Destino ya lo tenemos en intAlmacenIdTraspaso
+            $tblNombre['MOIN_AlmacenCataID']=$intAlmacenIdTraspaso;//Indicamos en el XML que el Id del Almacén es el Id de Destino
+            $tblNombre['MOIN_Referencia']=$intCode;//La Referencia en el Almacen de destino es el Id del almacen Origen
+            $strSql = "SELECT CATA_CataID FROM paraCatalogo WHERE CATA_Tipo='ALMACENMOV' AND CATA_Desc1 LIKE 'ENT.OTRO ALMACEN'";
+            $stmt = $db->prepare($strSql);$stmt->execute();
+            $row= $stmt->fetch();
+            if($row){
+                $tblNombre['MOIN_TipoMovCataID']= $row['CATA_CataID'];
+            }         
+            if ($intReferencia>0){
+                //Eliminamos el Detalle del xml ya que se va a insertar vía Query                        
+                unset($xDoc->InvMovimiento->InvMovimientoDet);
+            }else if ($intContIDTraspaso>0) {
+                foreach ($xDoc->InvMovimiento->InvMovimientoDet as $tblDetalle) {
+                    $tblDetalle['MODT_ContID']=$intContIDTraspaso;
+                }
+            }
+            // Actualizamos el xml
+            $strWriter=$xDoc->asXML();
+            if ($intReferencia>0){//Si es mayor a 0 es un cambio para el almacén destino
+                pa_MOIN_abcInvMovimiento($intReferencia, $strWriter, $intUsrId, $strIpAddress);
+                //Damos de baja el detalle del movimiento en el Almacén destino
+                sMoinAfectaExistencia($intReferencia, $intAlmacenIdTraspaso, "-");
+                $strSql = "UPDATE InvMovimientoDet SET MODT_Estatus = 'B'
+                    ,MODT_UsuaDate=$gstrFechaHoy ,MODT_UsuaID=?
+                     WHERE MODT_MoinID=?
+                     AND MODT_Estatus <> 'B'";
+                $stmt = $db->prepare($strSql);
+                $stmt->execute([$intUsrId,$intReferencia]);
+                //Insertamos el detalle del movimiento en el Almacén destino
+                $strSql = "INSERT INTO InvMovimientoDet (MODT_MoinID,MODT_ProdID,MODT_ContID,MODT_Cantidad,MODT_Costo,MODT_UsuaID,MODT_PvarID,MODT_UsuaDate)
+                    SELECT ".$intReferencia.",MODT_ProdID,".($intContIDTraspaso > 0 ? $intContIDTraspaso: "0" ) .",SUM(MODT_Cantidad)*-1,MODT_Costo,".$intUsrId.",MODT_PvarID,$gstrFechaHoy
+                    FROM InvMovimientoDet WHERE MODT_MoinID=?
+                    AND MODT_Estatus <> 'B'
+                    GROUP BY MODT_ProdID,MODT_PvarID,MODT_ContID,MODT_Costo";
+                    $stmt = $db->prepare($strSql);
+                    $stmt->execute([$intCode]);                    
+                    sMoinAfectaExistencia($intReferencia, $intAlmacenIdTraspaso, "+");
+            }else {//Es un Insert en el almacén destino
+                $intReferencia = pa_MOIN_abcInvMovimiento($intReferencia, $strWriter, $intUsrId, $strIpAddress);
+                //Actualizamos el Almacén origen con la referencia del Mov. del almacen destino
+                $strSql = "UPDATE InvMovimiento SET MOIN_Referencia=? ,MOIN_UsuaDate=$gstrFechaHoy WHERE MOIN_MoinId=?";
+                $stmt = $db->prepare($strSql);
+                $stmt->execute([$intReferencia,$intCode]);                                                    
+            }
+        }
     }
     return $intCode;
 }
@@ -880,64 +933,61 @@ function fInsertInvMovimiento($strMOIN_AlmacenCataID,$strMOIN_TipoMovCataID,$str
     return $intResultado;
 }
 function sMoinAfectaExistencia($intCode,$intAlmacenId,$strSigno)
-{
-    if ($bolAfectaExistencia){
-        global $db;
-        global $gstrFechaHoy;
-        $intResultado=0;
-        if ($db) {
-            //SI EL ESTATUS ES P QUE NO AFECTE EXISTENCIAS.
-            $strEstatus="";
-            $strSql = "SELECT MOIN_Estatus FROM InvMovimiento WHERE MOIN_MoinId=?";
+{    
+    global $db;
+    global $gstrFechaHoy;
+    $intResultado=0;
+    if ($db) {
+        //SI EL ESTATUS ES P QUE NO AFECTE EXISTENCIAS.
+        $strEstatus="";
+        $strSql = "SELECT MOIN_Estatus FROM InvMovimiento WHERE MOIN_MoinId=?";
+        $stmt = $db->prepare($strSql);
+        $stmt->execute([$intCode]);
+        $row= $stmt->fetch();
+        if($row){
+            $strEstatus=$row['MOIN_Estatus'];
+        }
+        if ($strEstatus!="P"){
+            $strSql = "UPDATE InvProductoContenedor SET InvProductoContenedor\.PTCO_Existencia=InvProductoContenedor\.PTCO_Existencia".$strSigno."InvMovimientoDet.MODT_Cantidad, InvProductoContenedor.PTCO_UsuaDate=$gstrFechaHoy
+                FROM InvProductoContenedor INNER JOIN InvMovimientoDet ON InvMovimientoDet.MODT_ProdID=InvProductoContenedor.PTCO_ProdId 
+                AND InvMovimientoDet.MODT_ContID=InvProductoContenedor.PTCO_contID AND InvMovimientoDet.MODT_PvarID=InvProductoContenedor.PTCO_PvarID
+                WHERE InvProductoContenedor.PTCO_Estatus<>'B'
+                AND InvMovimientoDet.MODT_Cantidad<>0
+                AND InvMovimientoDet.MODT_Estatus<>'B'
+                AND InvMovimientoDet.MODT_MoinID=?";
             $stmt = $db->prepare($strSql);
-            $stmt->execute([$intCode]);
-            $row= $stmt->fetch();
-            if($row){
-                $strEstatus=$row['MOIN_Estatus'];
-            }
-            if ($strEstatus!="P"){
-                $strSql = "UPDATE InvProductoContenedor 
-                    SET InvProductoContenedor.PTCO_Existencia=InvProductoContenedor.PTCO_Existencia".$strSigno."InvMovimientoDet.MODT_Cantidad, InvProductoContenedor.PTCO_UsuaDate=$gstrFechaHoy
-                    FROM InvProductoContenedor INNER JOIN InvMovimientoDet ON InvMovimientoDet.MODT_ProdID=InvProductoContenedor.PTCO_ProdId 
-                    AND InvMovimientoDet.MODT_ContID=InvProductoContenedor.PTCO_contID AND InvMovimientoDet.MODT_PvarID=InvProductoContenedor.PTCO_PvarID
-                    WHERE InvProductoContenedor.PTCO_Estatus<>'B'
-                    AND InvMovimientoDet.MODT_Cantidad<>0
+            $stmt->execute([$intCode]);        
+            //INSERTA LOS QUE NO EXISTEN PXC        
+            $strSql = "INSERT INTO InvProductoContenedor(PTCO_contID,PTCO_ProdId,PTCO_Existencia,PTCO_PvarID,PTCO_UsuaDate)
+                SELECT MODT_ContID,MODT_ProdID,SUM(MODT_Cantidad),MODT_PvarID,$gstrFechaHoy
+                FROM InvMovimientoDet WHERE InvMovimientoDet.MODT_MoinID=?
+                AND InvMovimientoDet.MODT_Estatus<>'B'
+                AND InvMovimientoDet.MODT_ProdID NOT IN (SELECT InvProductoContenedor.PTCO_ProdId FROM InvProductoContenedor WHERE InvProductoContenedor.PTCO_ProdId=InvMovimientoDet.MODT_ProdID 
+                    AND InvMovimientoDet.MODT_ContID=InvProductoContenedor.PTCO_contID AND InvMovimientoDet.MODT_PvarID=InvProductoContenedor.PTCO_PvarID AND InvProductoContenedor.PTCO_Estatus<>'B')
+                GROUP BY MODT_ContID,MODT_ProdID,MODT_PvarID";
+            $stmt = $db->prepare($strSql);
+            $stmt->execute([$intCode]); 
+            
+            $strSql = "UPDATE InvProductoAlmacen 
+            SET InvProductoAlmacen.PTAL_Existencia=InvProductoAlmacen.PTAL_Existencia".$strSigno."A.MODT_Cantidad,InvProductoAlmacen.PTAL_UsuaDate=$gstrFechaHoy
+            FROM InvProductoAlmacen INNER JOIN (SELECT MODT_ProdID,MODT_PvarID,SUM(InvMovimientoDet.MODT_Cantidad) MODT_Cantidad
+                FROM InvMovimientoDet WHERE InvMovimientoDet.MODT_MoinID=? AND InvMovimientoDet.MODT_Estatus<>'B'
+                AND InvMovimientoDet.MODT_Cantidad<>0 GROUP BY MODT_ProdID,MODT_PvarID) AS A ON A.MODT_ProdID=InvProductoAlmacen.PTAL_ProdId
+            AND A.MODT_PvarID=InvProductoAlmacen.PTAL_PvarID
+            WHERE InvProductoAlmacen.PTAL_Estatus<>'B'
+            AND PTAL_AlmacenCataID=?";
+            $stmt = $db->prepare($strSql);
+            $stmt->execute([$intCode,$intAlmacenId]);
+            //INSERTA LOS QUE NO EXISTEN PXA
+            $strSql = "INSERT INTO InvProductoAlmacen(PTAL_AlmacenCataID,PTAL_ProdId,PTAL_Existencia,PTAL_PvarID,PTAL_UsuaDate)
+                    SELECT ".$intAlmacenId." AS AlmaID,InvMovimientoDet.MODT_ProdID,SUM(InvMovimientoDet.MODT_Cantidad),InvMovimientoDet.MODT_PvarID,$gstrFechaHoy
+                    FROM InvMovimientoDet WHERE InvMovimientoDet.MODT_MoinID=?
                     AND InvMovimientoDet.MODT_Estatus<>'B'
-                    AND InvMovimientoDet.MODT_MoinID=?";
-                $stmt = $db->prepare($strSql);
-                $stmt->execute([$intCode]);        
-                //INSERTA LOS QUE NO EXISTEN PXC        
-                $strSql = "INSERT INTO InvProductoContenedor(PTCO_contID,PTCO_ProdId,PTCO_Existencia,PTCO_PvarID,PTCO_UsuaDate)
-$                    SELECT MODT_ContID,MODT_ProdID,SUM(MODT_Cantidad),MODT_PvarID,$gstrFechaHoy
-$                    FROM InvMovimientoDet WHERE InvMovimientoDet.MODT_MoinID=?
-$                    AND InvMovimientoDet.MODT_Estatus<>'B'
-$                    AND InvMovimientoDet.MODT_ProdID NOT IN (SELECT InvProductoContenedor.PTCO_ProdId FROM InvProductoContenedor WHERE InvProductoContenedor.PTCO_ProdId=InvMovimientoDet.MODT_ProdID 
-                        AND InvMovimientoDet.MODT_ContID=InvProductoContenedor.PTCO_contID AND InvMovimientoDet.MODT_PvarID=InvProductoContenedor.PTCO_PvarID AND InvProductoContenedor.PTCO_Estatus<>'B')
-                    GROUP BY MODT_ContID,MODT_ProdID,MODT_PvarID";
-                $stmt = $db->prepare($strSql);
-                $stmt->execute([$intCode]); 
-                
-                $strSql = "UPDATE InvProductoAlmacen 
-                SET InvProductoAlmacen.PTAL_Existencia=InvProductoAlmacen.PTAL_Existencia".$strSigno."A.MODT_Cantidad,InvProductoAlmacen.PTAL_UsuaDate=$gstrFechaHoy
-                FROM InvProductoAlmacen INNER JOIN (SELECT MODT_ProdID,MODT_PvarID,SUM(InvMovimientoDet.MODT_Cantidad) MODT_Cantidad
-                    FROM InvMovimientoDet WHERE InvMovimientoDet.MODT_MoinID=? AND InvMovimientoDet.MODT_Estatus<>'B'
-                    AND InvMovimientoDet.MODT_Cantidad<>0 GROUP BY MODT_ProdID,MODT_PvarID) AS A ON A.MODT_ProdID=InvProductoAlmacen.PTAL_ProdId
-                AND A.MODT_PvarID=InvProductoAlmacen.PTAL_PvarID
-                WHERE InvProductoAlmacen.PTAL_Estatus<>'B'
-                AND PTAL_AlmacenCataID=?";
-                $stmt = $db->prepare($strSql);
-                $stmt->execute([$intCode,$intAlmacenId]);
-                //INSERTA LOS QUE NO EXISTEN PXA
-                $strSql = "INSERT INTO InvProductoAlmacen(PTAL_AlmacenCataID,PTAL_ProdId,PTAL_Existencia,PTAL_PvarID,PTAL_UsuaDate)
-                     SELECT ".$intAlmacenId." AS AlmaID,InvMovimientoDet.MODT_ProdID,SUM(InvMovimientoDet.MODT_Cantidad),InvMovimientoDet.MODT_PvarID,$gstrFechaHoy
-                     FROM InvMovimientoDet WHERE InvMovimientoDet.MODT_MoinID=?
-                     AND InvMovimientoDet.MODT_Estatus<>'B'
-                     AND InvMovimientoDet.MODT_ProdID NOT IN (SELECT InvProductoAlmacen.PTAL_ProdId FROM InvProductoAlmacen WHERE InvProductoAlmacen.PTAL_ProdId=InvMovimientoDet.MODT_ProdID 
-                     AND InvMovimientoDet.MODT_PvarID=InvProductoAlmacen.PTAL_PvarID AND InvProductoAlmacen.PTAL_Estatus<>'B' AND InvProductoAlmacen.PTAL_AlmacenCataID=?)
-                     GROUP BY InvMovimientoDet.MODT_ProdID,InvMovimientoDet.MODT_PvarID";
-                $stmt = $db->prepare($strSql);
-                $stmt->execute([$intCode,$intAlmacenId]);                     
-            }
+                    AND InvMovimientoDet.MODT_ProdID NOT IN (SELECT InvProductoAlmacen.PTAL_ProdId FROM InvProductoAlmacen WHERE InvProductoAlmacen.PTAL_ProdId=InvMovimientoDet.MODT_ProdID 
+                    AND InvMovimientoDet.MODT_PvarID=InvProductoAlmacen.PTAL_PvarID AND InvProductoAlmacen.PTAL_Estatus<>'B' AND InvProductoAlmacen.PTAL_AlmacenCataID=?)
+                    GROUP BY InvMovimientoDet.MODT_ProdID,InvMovimientoDet.MODT_PvarID";
+            $stmt = $db->prepare($strSql);
+            $stmt->execute([$intCode,$intAlmacenId]);                     
         }
     }
 }
@@ -1154,7 +1204,7 @@ function pa_CONT_ConsultaInvContenedor($Accion, $Code1, $Parametro1, $Parametro2
 {
     global $db;
     if ($db) {
-        switch ($strAccion) {
+        switch ($Accion) {
         case "VALCONTENEDOR":
             $strSql = "SELECT CONT_ContID,CONT_ubicCataID,UBIC_Clave
             FROM InvContenedor INNER JOIN InvUbicacion ON CONT_ubicCataID=UBIC_UbicCataID
@@ -1169,10 +1219,11 @@ function pa_CONT_ConsultaInvContenedor($Accion, $Code1, $Parametro1, $Parametro2
             if ($Parametro2<>''){
                 $stmt->bindParam(':Parametro2', $Parametro2, PDO::PARAM_STR);            
             }
+            $stmt->execute();
+            return $stmt;            
         break;
         }
-        $stmt->execute();
-        return $stmt;
+
     } else {
         return null;
     }
@@ -1231,16 +1282,17 @@ function pa_UBIC_ConsultaInvUbicacion($Accion, $Code1, $Parametro1, $Parametro2)
 {
     global $db;
     if ($db) {
-        switch ($strAccion) {
+        switch ($Accion) {
         case "DEFAULT":
             $strSql = "SELECT MIN(UBIC_UbicCataID) UBIC_UbicCataID
             FROM InvUbicacion WHERE UBIC_Estatus<>'B' AND UBIC_AlmaID=:Code1";
             $stmt = $db->prepare($strSql);            
             $stmt->bindParam(':Code1', intval($Code1), PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt;            
         break;
         }
-        $stmt->execute();
-        return $stmt;
+
     } else {
         return null;
     }
