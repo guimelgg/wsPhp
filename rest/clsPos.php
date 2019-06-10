@@ -407,7 +407,7 @@ function pa_INFI_abcInvFisico($intCode, $strXml, $intUsrId, $strIpAddress)
             $strSql = "SELECT MAX(INFI_AEntradaId) AS INFI_AEntradaId,MAX(INFI_ASalidaId) AS INFI_ASalidaId FROM InvFisico WHERE INFI_Estatus<>'B' 
             AND INFI_AlmaId=:INFI_AlmaId AND INFI_Fecha=:INFI_Fecha";
             $stmt = $db->prepare($strSql);
-            $stmt->bindParam(':INFI_AlmaId', $intval($tblNombre['INFI_AlmaId']), PDO::PARAM_INT);  
+            $stmt->bindParam(':INFI_AlmaId', intval($tblNombre['INFI_AlmaId']), PDO::PARAM_INT);  
             $stmt->bindParam(':INFI_Fecha', $tblNombre['INFI_Fecha'], PDO::PARAM_STR);
             $stmt->execute();   
             $row= $stmt->fetch();
@@ -439,34 +439,17 @@ function pa_INFI_abcInvFisico($intCode, $strXml, $intUsrId, $strIpAddress)
                 $strSql="CREATE TEMP VIEW TempInvFisico AS
                 SELECT IFDT_IfdtId IfdtId,INFI_InfiId InfiId,IFDT_ProdId ProdId,IFDT_ContId ContId,ifnull(TempExiPXC.Existencia,0) Existencia,IFDT_PvarID PvarID
                 FROM InvFisicoDet INNER JOIN InvFisico ON InvFisico.INFI_InfiId=InvFisicoDet.IFDT_InfiId
-                AND InvFisico.INFI_AlmaId=:INFI_AlmaId AND InvFisico.INFI_Fecha=:INFI_Fecha AND InvFisico.INFI_Estatus<>'B' AND InvFisicoDet.IFDT_Estatus='A'
-                LEFT JOIN TempExiPXC ON InvFisicoDet.IFDT_ProdID=TempExiPXC.ProdID AND InvFisicoDet.IFDT_PvarID=TempExiPXC.PvarID AND InvFisicoDet.IFDT_ContId=TempExiPXC.ContID;
-                INSERT OR REPLACE INTO InvFisicoDet (IFDT_IfdtId,IFDT_InfiId,IFDT_ProdId,IFDT_ContId,IFDT_Cantidad,IFDT_PvarID,IFDT_UsuaDate)
-                SELECT IfdtId,InfiId,ProdId,ContId,Existencia,PvarID,$gstrFechaHoy FROM TempInvFisico;";
-                $stmt = $db->prepare($strSql); 
-                $stmt->bindParam(':INFI_AlmaId', intval($tblNombre['INFI_AlmaId']), PDO::PARAM_INT);
-                $stmt->bindParam(':INFI_Fecha', $tblNombre['INFI_Fecha'], PDO::PARAM_STR);
+                AND InvFisico.INFI_AlmaId=".$tblNombre['INFI_AlmaId']." AND InvFisico.INFI_Fecha='".$tblNombre['INFI_Fecha']."' AND InvFisico.INFI_Estatus<>'B' AND InvFisicoDet.IFDT_Estatus='A'
+                LEFT JOIN TempExiPXC ON InvFisicoDet.IFDT_ProdID=TempExiPXC.ProdID AND InvFisicoDet.IFDT_PvarID=TempExiPXC.PvarID AND InvFisicoDet.IFDT_ContId=TempExiPXC.ContID;";
+                $stmt = $db->prepare($strSql);                                 
                 $stmt->execute();  
 
-                // $strSql = "UPDATE InvFisicoDet
-                // SET InvFisicoDet.IFDT_Kardex=0, InvFisicoDet.IFDT_UsuaDate=$gstrFechaHoy
-                //  FROM  InvFisicoDet INNER JOIN InvFisico ON InvFisico.INFI_InfiId=InvFisicoDet.IFDT_InfiId
-                //  WHERE InvFisico.INFI_AlmaId=".$tblNombre['INFI_AlmaId']." AND InvFisico.INFI_Fecha=:INFI_Fecha AND InvFisico.INFI_Estatus<>'B' AND InvFisicoDet.IFDT_Estatus='A'";
-                // $stmt = $db->prepare($strSql); 
-                // $stmt->bindParam(':INFI_Fecha', $tblNombre['INFI_Fecha'], PDO::PARAM_STR);
-                // $stmt->execute();  
-                // $strSql = "UPDATE InvFisicoDet
-                // SET InvFisicoDet.IFDT_Kardex=TempExiPXC.Existencia, InvFisicoDet.IFDT_UsuaDate=$gstrFechaHoy
-                // FROM  InvFisicoDet INNER JOIN InvFisico ON InvFisico.INFI_InfiId=InvFisicoDet.IFDT_InfiId
-                // INNER JOIN TempExiPXC ON InvFisicoDet.IFDT_ProdID=TempExiPXC.ProdID AND InvFisicoDet.IFDT_PvarID=TempExiPXC.PvarID AND InvFisicoDet.IFDT_ContId=TempExiPXC.ContID
-                // WHERE InvFisico.INFI_AlmaId=".$tblNombre['INFI_AlmaId']
-                // ." AND InvFisico.INFI_Fecha=:INFI_Fecha AND InvFisico.INFI_Estatus<>'B' AND InvFisicoDet.IFDT_Estatus='A'";
-                // $stmt = $db->prepare($strSql); 
-                // $stmt->bindParam(':INFI_Fecha', $tblNombre['INFI_Fecha'], PDO::PARAM_STR);
-                // $stmt->execute();  
-                if ($tblNombre['OPCION'] == "CIERRE") {
-                    $intNoReportados=0;
-                    $strSql = "SELECT MAX(INFI_infiid) AS INFI_infiid FROM InvFisico WHERE INFI_Estatus<>'B' AND INFI_AlmaId=" . $tblNombre['INFI_AlmaId'] 
+                $strSql="INSERT OR REPLACE INTO InvFisicoDet (IFDT_IfdtId,IFDT_InfiId,IFDT_ProdId,IFDT_ContId,IFDT_Kardex,IFDT_PvarID,IFDT_UsuaDate)
+                SELECT IfdtId,InfiId,ProdId,ContId,Existencia,PvarID,".$gstrFechaHoy." FROM TempInvFisico;";
+                $stmt = $db->prepare($strSql);                                 
+                $stmt->execute();                  
+                if ($tblNombre['OPCION'] == "CIERRE") {                    
+                    $strSql = "SELECT ifnull(MAX(INFI_infiid),0) AS INFI_Infiid FROM InvFisico WHERE INFI_Estatus<>'B' AND INFI_AlmaId=" . $tblNombre['INFI_AlmaId'] 
                     ." AND INFI_Fecha=:INFI_Fecha AND INFI_Obs='PRODUCTOS NO REPORTADOS'";
                     $stmt = $db->prepare($strSql); 
                     $stmt->bindParam(':INFI_Fecha', $tblNombre['INFI_Fecha'], PDO::PARAM_STR);
@@ -483,7 +466,7 @@ function pa_INFI_abcInvFisico($intCode, $strXml, $intUsrId, $strIpAddress)
                      AND InvFisico.INFI_AlmaId=:INFI_AlmaId
                      AND InvFisico.INFI_Fecha=:INFI_Fecha 
                      AND InvFisico.INFI_Estatus<>'B'
-                     AND InvFisico.INFI_InfiId<>$intNoReportados )";
+                     AND InvFisico.INFI_InfiId<>$intNoReportados );";
                     if ($intNoReportados == 0){
                         $strSql = "SELECT * " . $strSqlPtNoRpt;
                         $stmt = $db->prepare($strSql); 
@@ -507,21 +490,19 @@ function pa_INFI_abcInvFisico($intCode, $strXml, $intUsrId, $strIpAddress)
                     }
                     if ($intNoReportados >0){//INSERTA LOS PRODUCTOS NO REPORTADOS Y CON VALOR
                         $strSql = "INSERT INTO InvFisicoDet (IFDT_InfiId,IFDT_ProdId,IFDT_ContId,IFDT_Cantidad,IFDT_UsuaID,IFDT_PvarID,IFDT_Kardex,IFDT_UsuaDate) 
-                        SELECT $intNoReportados ,TempExiPXC.ProdID,TempExiPXC.ContID,0,$intUsrId,TempExiPXC.PvarID,TempExiPXC.Existencia,".$gstrFechaHoy.strSqlPtNoRpt;
+                        SELECT $intNoReportados ,TempExiPXC.ProdID,TempExiPXC.ContID,0,$intUsrId,TempExiPXC.PvarID,TempExiPXC.Existencia,".$gstrFechaHoy.$strSqlPtNoRpt;
                         $stmt = $db->prepare($strSql); 
                         $stmt->execute();  
                     }
                     //Productos con diferencias entre el Fisico y kardex
-                    $strSql = "UPDATE InvMovimientoDet SET MODT_Estatus = 'B' 
-                    , MODT_UsuaDate=$gstrFechaHoy , MODT_UsuaID=$intUsrId
-                     WHERE MODT_MoinID = -99";
+                    $strSql = "UPDATE InvMovimientoDet SET MODT_Estatus = 'B',MODT_UsuaDate=".$gstrFechaHoy.",MODT_UsuaID=".$intUsrId.
+                     " WHERE MODT_MoinID = -99;";                                        
                     $stmt = $db->prepare($strSql); 
                     $stmt->execute();                       
-                    
-                    $strSql = "INSERT INTO InvMovimientoDet (MODT_MoinID,MODT_ProdID,MODT_ContID,MODT_Cantidad,MODT_UsuaID,MODT_PvarID,MODT_UsuaDate)
-                    SELECT -99,InvFisicoDet.IFDT_ProdId,InvFisicoDet.IFDT_ContId,SUM(InvFisicoDet.IFDT_Cantidad)-MAX(InvFisicoDet.IFDT_Kardex),$intUsrId 
-                    ,InvFisicoDet.IFDT_PvarID,$gstrFechaHoy
-                    FROM InvFisico INNER JOIN InvFisicoDet ON InvFisico.INFI_InfiId=InvFisicoDet.IFDT_InfiId
+                    $strSql="INSERT INTO InvMovimientoDet (MODT_MoinID,MODT_ProdID,MODT_ContID,MODT_Cantidad,MODT_UsuaID,MODT_PvarID,MODT_UsuaDate)
+                    SELECT -99,InvFisicoDet.IFDT_ProdId,InvFisicoDet.IFDT_ContId,SUM(InvFisicoDet.IFDT_Cantidad)-MAX(InvFisicoDet.IFDT_Kardex),".$intUsrId. 
+                    ",InvFisicoDet.IFDT_PvarID,".$gstrFechaHoy.
+                    " FROM InvFisico INNER JOIN InvFisicoDet ON InvFisico.INFI_InfiId=InvFisicoDet.IFDT_InfiId
                     WHERE InvFisicoDet.IFDT_Estatus='A'
                     AND InvFisico.INFI_AlmaId=:INFI_AlmaId
                     AND InvFisico.INFI_Fecha=:INFI_Fecha AND INFI_Estatus<>'B'
@@ -600,19 +581,19 @@ function pa_INFI_abcInvFisico($intCode, $strXml, $intUsrId, $strIpAddress)
                          $stmt->execute();                                                           
                     }  
                     // CREA REFERENCIA ENTRE INV FISICO Y MOVIMIENTO
+                    //CAMBIA EL ESTATUS A V EN LOS MOVIMIENTOS DE ENTRADA Y SALIDA
                     $strSql = "UPDATE InvFisico 
                      SET INFI_AEntradaId=" . $intEntradaId .
-                    ",INFI_ASalidaId=" . intSalidaId .
+                    ",INFI_ASalidaId=" . $intSalidaId .
                     ",INFI_Estatus='V'
                     ,INFI_UsuaDate=$gstrFechaHoy , INFI_UsuaID=" . $intUsrId .
                     " WHERE INFI_AlmaId=" . $tblNombre['INFI_AlmaId'] .
-                    " AND INFI_Fecha=" . $tblNombre['INFI_Fecha'] . " AND INFI_Estatus<>'B'";
+                    " AND INFI_Fecha='" . $tblNombre['INFI_Fecha'] . "' AND INFI_Estatus<>'B';";
                     $stmt = $db->prepare($strSql);                    
-                    $stmt->execute();     
-                    //CAMBIA EL ESTATUS A V EN LOS MOVIMIENTOS DE ENTRADA Y SALIDA
-                    $strSql = "UPDATE InvMovimiento SET MOIN_Estatus='V',
-                     MOIN_UsuaDate=$gstrFechaHoy, MOIN_UsuaID=" . $intUsrId .
-                    " WHERE (MOIN_MoinID =" . $intEntradaId . " OR MOIN_MoinID =" . $intSalidaId . ") AND MOIN_Estatus = 'A'";
+                    $stmt->execute();                                                                                                                       
+                    $strSql="UPDATE InvMovimiento SET MOIN_Estatus='V',
+                     MOIN_UsuaDate=".$gstrFechaHoy.",MOIN_UsuaID=".$intUsrId.
+                    " WHERE (MOIN_MoinID =".$intEntradaId." OR MOIN_MoinID =".$intSalidaId.") AND MOIN_Estatus = 'A';";
                     $stmt = $db->prepare($strSql);                    
                     $stmt->execute(); 
                     //ACTUALIZA LA EXISTENCIA EN ALMACENES  
@@ -685,7 +666,7 @@ function fInsertInvFisico($strINFI_AlmaId, $strINFI_Fecha, $strINFI_Obs, $intUsr
     }
     return $intResultado;
 }
-function sTempExiPXC($strINFI_AlmaId, $strINFI_Fecha, $intEntradaId, $intSalidaId, $intProdId, $intPvarId)
+function sTempExiPXC($strINFI_AlmaId, $strINFI_Fecha="", $intEntradaId=0, $intSalidaId=0, $intProdId=0, $intPvarId=0)
 {
     //El estatus de P es pendiente de autorización y no afecta existencia
     //Obtiene la Existencia que habia a X fecha
@@ -699,10 +680,10 @@ function sTempExiPXC($strINFI_AlmaId, $strINFI_Fecha, $intEntradaId, $intSalidaI
 
         $strSql = "INSERT INTO TempExiPXC (PvarID, ProdID, ContID, Existencia)
         SELECT InvMovimientoDet.MODT_PvarID, InvMovimientoDet.MODT_ProdID, InvMovimientoDet.MODT_ContID, SUM(InvMovimientoDet.MODT_Cantidad) AS Existencia
-        FROM (InvMovimientoDet INNER JOIN InvMovimiento ON InvMovimiento.MOIN_MoinId = InvMovimientoDet.MODT_MoinID)
-        WHERE InvMovimientoDet.MODT_Estatus <> 'B' AND InvMovimiento.MOIN_Estatus <> 'B' AND InvMovimiento.MOIN_Estatus <> 'P' AND InvMovimiento.MOIN_AlmacenCataID =".$strINFI_AlmaId;
-        
-        if (strlen($strINFI_Fecha)>0){    $strSql .= "AND (InvMovimiento.MOIN_Fecha < ". $strINFI_Fecha.")"; }
+        FROM InvMovimientoDet INNER JOIN InvMovimiento ON InvMovimiento.MOIN_MoinId = InvMovimientoDet.MODT_MoinID AND InvMovimientoDet.MODT_ProdID>0
+        AND InvMovimientoDet.MODT_Estatus <> 'B' AND InvMovimiento.MOIN_Estatus <> 'B' AND InvMovimiento.MOIN_Estatus <> 'P' 
+        AND InvMovimiento.MOIN_AlmacenCataID =".$strINFI_AlmaId;        
+        if (strlen($strINFI_Fecha)>0){    $strSql .= " AND (InvMovimiento.MOIN_Fecha < '". $strINFI_Fecha."')"; }
         if ($intEntradaId>0 && $intSalidaId>0){    $strSql .= " AND (InvMovimiento.MOIN_moinId not in (".$intEntradaId.",".$intSalidaId."))"; }
         if ($intProdId > 0) {    $strSql .= " AND (InvMovimientoDet.MODT_ProdID=".$intProdId & ")"; }
         if ($intPvarId > 0) {    $strSql .= " AND (InvMovimientoDet.MODT_PvarID=".$intPvarId & ")"; }        
@@ -957,25 +938,28 @@ function sMoinAfectaExistencia($intCode,$intAlmacenId,$strSigno)
         }
         if ($strEstatus!="P"){
             $strSql="CREATE TEMP VIEW TempInvPxC AS
-            SELECT InvProductoContenedor.PTCO_PtcoId PtcoId, InvMovimientoDet.MODT_ContID contID,InvMovimientoDet.MODT_ProdID ProdId
-            ,ifnull(MIN(InvProductoContenedor.PTCO_Existencia),0)".$strSigno."SUM(InvMovimientoDet.MODT_Cantidad) Existencia,InvMovimientoDet.MODT_PvarID PvarID
-            FROM  InvMovimientoDet LEFT JOIN InvProductoContenedor ON InvMovimientoDet.MODT_ProdID=InvProductoContenedor.PTCO_ProdId 
-            AND InvMovimientoDet.MODT_ContID=InvProductoContenedor.PTCO_contID AND InvMovimientoDet.MODT_PvarID=InvProductoContenedor.PTCO_PvarID
-            AND InvProductoContenedor.PTCO_Estatus<>'B'
-            WHERE InvMovimientoDet.MODT_Cantidad<>0
-            AND InvMovimientoDet.MODT_Estatus<>'B'
-            AND InvMovimientoDet.MODT_MoinID=?
-            GROUP BY InvProductoContenedor.PTCO_PtcoId,InvMovimientoDet.MODT_ContID,InvMovimientoDet.MODT_ProdID,InvMovimientoDet.MODT_PvarID;
-            INSERT OR REPLACE INTO InvProductoContenedor(PTCO_PtcoId, PTCO_contID,PTCO_ProdId,PTCO_Existencia,PTCO_PvarID,PTCO_UsuaDate)
-            SELECT PtcoId,contID,ProdId,Existencia,PvarID,$gstrFechaHoy FROM TempInvPxC;
-            INSERT OR REPLACE INTO InvProductoAlmacen(PTAL_PtalID,PTAL_AlmacenCataID,PTAL_ProdId,PTAL_Existencia,PTAL_PvarID,PTAL_UsuaDate)
-            SELECT InvProductoAlmacen.PTAL_PtalID,$intAlmacenId,ProdId,SUM(Existencia),PvarID,$gstrFechaHoy 
-            FROM TempInvPxC LEFT JOIN InvProductoAlmacen ON InvProductoAlmacen.PTAL_ProdID=TempInvPxC.ProdId AND InvProductoAlmacen.PTAL_AlmacenCataID=$intAlmacenId
-            AND InvProductoAlmacen.PTAL_PvarID=TempInvPxC.PvarID AND InvProductoAlmacen.PTAL_Estatus='A'
-            GROUP BY InvProductoAlmacen.PTAL_PtalID,ProdId,PvarID;";
-
+            SELECT  InvMovimientoDet.MODT_ContID contID,InvMovimientoDet.MODT_ProdID ProdId,SUM(InvMovimientoDet.MODT_Cantidad) Existencia,InvMovimientoDet.MODT_PvarID PvarID
+            FROM InvMovimientoDet WHERE InvMovimientoDet.MODT_MoinID=".$intCode.
+            " AND InvMovimientoDet.MODT_Cantidad<>0
+             AND InvMovimientoDet.MODT_Estatus<>'B'             
+             GROUP BY InvMovimientoDet.MODT_ContID,InvMovimientoDet.MODT_ProdID,InvMovimientoDet.MODT_PvarID;";            
             $stmt = $db->prepare($strSql);
-            $stmt->execute([$intCode]);                    
+            $stmt->execute();                                 
+            
+            $strSql="INSERT OR REPLACE INTO InvProductoContenedor(PTCO_PtcoId, PTCO_contID,PTCO_ProdId,PTCO_Existencia,PTCO_PvarID,PTCO_UsuaDate)
+             SELECT InvProductoContenedor.PTCO_PtcoId PtcoId,contID,ProdId,ifnull(InvProductoContenedor.PTCO_Existencia,0)".$strSigno."Existencia,PvarID,".$gstrFechaHoy.
+             " FROM TempInvPxC LEFT JOIN InvProductoContenedor ON TempInvPxC.ProdId=InvProductoContenedor.PTCO_ProdId
+             AND TempInvPxC.contID=InvProductoContenedor.PTCO_contID AND TempInvPxC.PvarID=InvProductoContenedor.PTCO_PvarID AND InvProductoContenedor.PTCO_Estatus<>'B';";            
+            $stmt = $db->prepare($strSql);
+            $stmt->execute();                                 
+
+             $strSql="INSERT OR REPLACE INTO InvProductoAlmacen(PTAL_PtalID,PTAL_AlmacenCataID,PTAL_ProdId,PTAL_Existencia,PTAL_PvarID,PTAL_UsuaDate)
+             SELECT InvProductoAlmacen.PTAL_PtalID,".$intAlmacenId.",ProdId,ifnull(InvProductoAlmacen.PTAL_Existencia,0)".$strSigno."SUM(Existencia),PvarID,".$gstrFechaHoy. 
+            " FROM TempInvPxC LEFT JOIN InvProductoAlmacen ON InvProductoAlmacen.PTAL_ProdID=TempInvPxC.ProdId AND InvProductoAlmacen.PTAL_AlmacenCataID=".$intAlmacenId.
+            " AND InvProductoAlmacen.PTAL_PvarID=TempInvPxC.PvarID AND InvProductoAlmacen.PTAL_Estatus='A'
+             GROUP BY InvProductoAlmacen.PTAL_PtalID,ProdId,PvarID;";            
+            $stmt = $db->prepare($strSql);
+            $stmt->execute();                    
         }
     }
 }
@@ -1023,66 +1007,68 @@ function pa_PTAL_abcInvProductoAlmacen($intCode, $strXml, $intUsrId, $strIpAddre
 
           break;
           case "EXIPXC"://ACTUALIZA EN InvProductoContenedor
+            sTempExiPXC($intCode);                  
             //MANDAMOS TODO A CERO PXC
-            $strSql = "UPDATE InvProductoContenedor 
-            SET InvProductoContenedor.PTCO_Existencia=0,InvProductoContenedor.PTCO_UsuaDate=$gstrFechaHoy
+            $strSql = "CREATE TEMP VIEW TempInvPxC AS 
+            SELECT InvProductoContenedor.PTCO_PtcoId PtcoId,InvProductoContenedor.PTCO_contID contID,InvProductoContenedor.PTCO_ProdId ProdId,InvProductoContenedor.PTCO_PvarID PvarID            
             FROM InvProductoContenedor INNER JOIN InvContenedor ON InvProductoContenedor.PTCO_contID=InvContenedor.CONT_CONTID
             INNER JOIN InvUbicacion ON InvContenedor.CONT_ubicCataID=InvUbicacion.UBIC_UbicCataID
-            WHERE InvUbicacion.UBIC_AlmaID=".$intCode." AND InvProductoContenedor.PTCO_Estatus<>'B'
-            AND InvContenedor.CONT_Estatus<>'B'";            
+            AND InvUbicacion.UBIC_AlmaID=".$intCode." AND InvProductoContenedor.PTCO_Estatus<>'B'
+            AND InvContenedor.CONT_Estatus<>'B'
+            LEFT JOIN TempExiPXC ON TempExiPXC.ProdID=InvProductoContenedor.PTCO_ProdId AND TempExiPXC.ContID=InvProductoContenedor.PTCO_contID AND TempExiPXC.PvarID=InvProductoContenedor.PTCO_PvarID
+            WHERE InvProductoContenedor.PTCO_Existencia<>0 AND TempExiPXC.ProdID IS NULL;";
             $stmt = $db->prepare($strSql);
             $stmt->execute();
+
+            $strSql="INSERT OR REPLACE INTO InvProductoContenedor(PTCO_PtcoId, PTCO_contID,PTCO_ProdId,PTCO_Existencia,PTCO_PvarID,PTCO_UsuaDate)
+            SELECT PtcoId,contID,ProdId,0,PvarID,".$gstrFechaHoy." FROM TempInvPxC;";            
+            $stmt = $db->prepare($strSql);
+            $stmt->execute();
+
             //ACTUALIZAMOS LOS DIFERENTES PXC
-            $strSql = "UPDATE InvProductoContenedor
-            SET InvProductoContenedor.PTCO_Existencia=TempExiPXC.Existencia,InvProductoContenedor.PTCO_UsuaDate= $gstrFechaHoy 
-            FROM InvProductoContenedor INNER JOIN TempExiPXC ON TempExiPXC.ProdID=InvProductoContenedor.PTCO_ProdId AND TempExiPXC.ContID=InvProductoContenedor.PTCO_contID AND TempExiPXC.PvarID=InvProductoContenedor.PTCO_PvarID
-            WHERE InvProductoContenedor.PTCO_Estatus<>'B'
-            AND InvProductoContenedor.PTCO_Existencia<>TempExiPXC.Existencia";
+            $strSql = "INSERT OR REPLACE INTO InvProductoContenedor(PTCO_PtcoId, PTCO_contID,PTCO_ProdId,PTCO_Existencia,PTCO_PvarID,PTCO_UsuaDate)
+            SELECT InvProductoContenedor.PTCO_PtcoId,TempExiPXC.ContID,TempExiPXC.ProdID,TempExiPXC.Existencia,TempExiPXC.PvarID,".$gstrFechaHoy.
+            " FROM TempExiPXC LEFT JOIN InvProductoContenedor ON TempExiPXC.ProdID=InvProductoContenedor.PTCO_ProdId AND TempExiPXC.ContID=InvProductoContenedor.PTCO_contID AND TempExiPXC.PvarID=InvProductoContenedor.PTCO_PvarID
+            AND InvProductoContenedor.PTCO_Estatus<>'B'            
+            WHERE ifnull(InvProductoContenedor.PTCO_Existencia,0)<>TempExiPXC.Existencia;";            
+            $stmt = $db->prepare($strSql);
+            $stmt->execute();                                    
+            $strSql="DELETE FROM TempExiPXC";
+            $stmt = $db->prepare($strSql);
+            $stmt->execute();                           
+
+            //ACTUALIZAMOS LOS DIFERENTES PXA,INSERTA LOS QUE NO EXISTEN PXA
+            $strSql = "CREATE TEMP VIEW TempInvPxA AS
+            SELECT InvProductoContenedor.PTCO_PvarID PvarID,InvProductoContenedor.PTCO_ProdId ProdID,SUM(PTCO_Existencia) AS Existencia
+            FROM InvProductoContenedor INNER JOIN InvContenedor ON InvProductoContenedor.PTCO_contID=InvContenedor.CONT_ContID
+            INNER JOIN InvUbicacion ON InvContenedor.CONT_UbicCataID=InvUbicacion.UBIC_UbicCataID            
+            AND InvUbicacion.UBIC_AlmaID=". $intCode ." AND InvProductoContenedor.PTCO_Estatus<>'B' AND InvContenedor.CONT_Estatus<>'B'
+            GROUP BY InvProductoContenedor.PTCO_ProdId,InvProductoContenedor.PTCO_PvarID;";
             $stmt = $db->prepare($strSql);
             $stmt->execute();            
-            //INSERTA LOS QUE NO EXISTEN PXC
-            $strSql = "INSERT INTO InvProductoContenedor(PTCO_contID,PTCO_ProdId,PTCO_Existencia,PTCO_PvarID,PTCO_UsuaDate)
-            SELECT ContID,ProdID,Existencia,PvarID,$gstrFechaHoy
-            FROM TempExiPXC WHERE Existencia<>0 AND TempExiPXC.ProdID NOT IN (SELECT InvProductoContenedor.PTCO_ProdId FROM InvProductoContenedor WHERE InvProductoContenedor.PTCO_ProdId=TempExiPXC.ProdID
-            AND TempExiPXC.ContID=InvProductoContenedor.PTCO_contID AND TempExiPXC.PvarID=InvProductoContenedor.PTCO_PvarID AND InvProductoContenedor.PTCO_Estatus<>'B')";           
+            
+            $strSql="INSERT OR REPLACE INTO InvProductoAlmacen(PTAL_PtalID,PTAL_AlmacenCataID,PTAL_ProdId,PTAL_Existencia,PTAL_PvarID,PTAL_UsuaDate)
+            SELECT InvProductoAlmacen.PTAL_PtalID,".$intCode.",TempInvPxA.ProdID,TempInvPxA.Existencia,TempInvPxA.PvarID,".$gstrFechaHoy.
+            " FROM TempInvPxA LEFT JOIN InvProductoAlmacen ON TempInvPxA.ProdID=InvProductoAlmacen.PTAL_ProdId AND TempInvPxA.PvarID=InvProductoAlmacen.PTAL_PvarID
+            AND InvProductoAlmacen.PTAL_AlmacenCataID=".$intCode." AND InvProductoAlmacen.PTAL_Estatus<>'B'
+            WHERE ifnull(InvProductoAlmacen.PTAL_Existencia,0)<>TempInvPxA.Existencia;";
             $stmt = $db->prepare($strSql);
             $stmt->execute();            
             //MANDAMOS TODO A CERO PXA
-            $strSql = "UPDATE InvProductoAlmacen
-            SET PTAL_Existencia=0,PTAL_UsuaDate=$gstrFechaHoy 
-            WHERE PTAL_AlmacenCataID=". $intCode;
+            $strSql="INSERT OR REPLACE INTO InvProductoAlmacen(PTAL_PtalID,PTAL_AlmacenCataID,PTAL_ProdId,PTAL_Existencia,PTAL_PvarID,PTAL_UsuaDate)
+            SELECT InvProductoAlmacen.PTAL_PtalID,PTAL_AlmacenCataID,PTAL_ProdId,0,PTAL_PvarID,".$gstrFechaHoy.
+            " FROM InvProductoAlmacen LEFT JOIN TempInvPxA ON TempInvPxA.ProdID=InvProductoAlmacen.PTAL_ProdId AND TempInvPxA.PvarID=InvProductoAlmacen.PTAL_PvarID
+            WHERE InvProductoAlmacen.PTAL_AlmacenCataID=".$intCode.
+            " AND InvProductoAlmacen.PTAL_Existencia<>0 AND InvProductoAlmacen.PTAL_Estatus<>'B' AND TempInvPxA.ProdID IS NULL;";            
             $stmt = $db->prepare($strSql);
-            $stmt->execute();
-            $strSql = "DELETE FROM TempExiPXC";
+            $stmt->execute();                                     
+
+            
+            /*$strSql = "UPDATE InvProductoAlmacen
+            SET PTAL_Existencia=0,PTAL_UsuaDate=".$gstrFechaHoy.
+            " WHERE PTAL_AlmacenCataID=". $intCode;
             $stmt = $db->prepare($strSql);
-            $stmt->execute();
-            $strSql = "INSERT INTO TempExiPXC(PvarID,ProdID,ContID,Existencia)
-            SELECT InvProductoContenedor.PTCO_PvarID,InvProductoContenedor.PTCO_ProdId,0 AS ContID,SUM(PTCO_Existencia) AS Existencia
-            FROM InvProductoContenedor,InvContenedor,InvUbicacion
-            WHERE InvProductoContenedor.PTCO_contID=InvContenedor.CONT_ContID
-            AND InvContenedor.CONT_UbicCataID=InvUbicacion.UBIC_UbicCataID
-            AND InvUbicacion.UBIC_AlmaID=". $intCode .
-            " AND InvProductoContenedor.PTCO_Estatus<>'B' AND InvContenedor.CONT_Estatus<>'B'
-            GROUP BY InvProductoContenedor.PTCO_ProdId,InvProductoContenedor.PTCO_PvarID";
-            $stmt = $db->prepare($strSql);
-            $stmt->execute();  
-            //ACTUALIZAMOS LOS DIFERENTES PXA
-            $strSql = "UPDATE InvProductoAlmacen
-            SET InvProductoAlmacen.PTAL_Existencia=TempExiPXC.Existencia,InvProductoAlmacen.PTAL_UsuaDate=$gstrFechaHoy
-            FROM InvProductoAlmacen INNER JOIN TempExiPXC ON TempExiPXC.ProdID=InvProductoAlmacen.PTAL_ProdId AND TempExiPXC.PvarID=InvProductoAlmacen.PTAL_PvarID
-            WHERE InvProductoAlmacen.PTAL_Estatus<>'B'
-            AND InvProductoAlmacen.PTAL_Existencia<>TempExiPXC.Existencia
-            AND InvProductoAlmacen.PTAL_AlmacenCataID=".$intCode;
-            $stmt = $db->prepare($strSql);
-            $stmt->execute();   
-            //INSERTA LOS QUE NO EXISTEN PXA            
-            $strSql = "INSERT INTO InvProductoAlmacen(PTAL_AlmacenCataID,PTAL_ProdId,PTAL_Existencia,PTAL_PvarID,PTAL_UsuaDate)
-            SELECT ". $intCode." AS AlmaID,TempExiPXC.ProdID,TempExiPXC.Existencia,TempExiPXC.PvarID,$gstrFechaHoy
-            FROM TempExiPXC WHERE TempExiPXC.ProdID NOT IN (SELECT InvProductoAlmacen.PTAL_ProdId FROM InvProductoAlmacen 
-            WHERE InvProductoAlmacen.PTAL_ProdId=TempExiPXC.ProdID AND TempExiPXC.PvarID=InvProductoAlmacen.PTAL_PvarID 
-            AND InvProductoAlmacen.PTAL_Estatus<>'B' AND PTAL_AlmacenCataID=". $intCode.")";
-            $stmt = $db->prepare($strSql);
-            $stmt->execute();                           
+            $stmt->execute();            */
           break;
           case "DEMACTIVA":
             //MANDAMOS TODO A CERO
@@ -1094,33 +1080,25 @@ function pa_PTAL_abcInvProductoAlmacen($intCode, $strXml, $intUsrId, $strIpAddre
             $strSql = "DELETE FROM TempExiPXC";
             $stmt = $db->prepare($strSql);
             $stmt->execute();   
-            $strSql = "INSERT INTO TempExiPXC(ProdID,PvarID,Existencia)
+            $strSql = "CREATE TEMP VIEW TempDemanda(ProdID,PvarID,Demanda)
             SELECT DEPE_ProdID,PVAR_PvarID, SUM(DEPE_Pedido-DEPE_Surtido) Demanda
             FROM VtaPedido INNER JOIN VtaPedidoDet on PEDI_PediID=VtaPedidoDet.DEPE_PediID AND DEPE_Estatus<>'B' AND PEDI_AlmacenID=".$intCode
             ." AND PEDI_Estatus <>'B' AND PEDI_Numero >0 AND DEPE_Pedido>DEPE_Surtido AND (DEPE_FactID IS NULL OR DEPE_FactID=0)
             INNER JOIN IngProducto ON DEPE_ProdID=PROD_ProdID
             INNER JOIN paraCatalogo ON PEDI_Estatus=CATA_Desc1 AND CATA_Code1=1
-            LEFT JOIN IngProductoVariable ON DEPE_PvarID=PVAR_PvarID AND PVAR_Estatus='A'
-            AND DEPE_Pedido>DEPE_Surtido
-            GROUP BY DEPE_ProdID,PVAR_PvarID ORDER BY DEPE_ProdID";
+            LEFT JOIN IngProductoVariable ON DEPE_PvarID=PVAR_PvarID AND PVAR_Estatus='A'            
+            GROUP BY DEPE_ProdID,PVAR_PvarID;";
             $stmt = $db->prepare($strSql);
             $stmt->execute();   
             //ACTUALIZA LA DEMANDA ACTIVA
-            $strSql = "UPDATE InvProductoAlmacen
-            SET InvProductoAlmacen.PTAL_Demanda=TempExiPXC.Existencia,InvProductoAlmacen.PTAL_UsuaDate=$gstrFechaHoy 
-            FROM InvProductoAlmacen INNER JOIN TempExiPXC ON TempExiPXC.ProdID=InvProductoAlmacen.PTAL_ProdId AND TempExiPXC.PvarID=InvProductoAlmacen.PTAL_PvarID
+            $strSql = "INSERT INTO InvProductoAlmacen(PTAL_PtalID,PTAL_AlmacenCataID,PTAL_ProdId,PTAL_Demanda,PTAL_PvarID,PTAL_UsuaDate)
+            SELECT InvProductoAlmacen.PTAL_PtalID,".$intCode." AS AlmaID,InvProductoAlmacen.PTAL_ProdId,ifnull(TempDemanda.Demanda,0),InvProductoAlmacen.PTAL_PvarID,".$gstrFechaHoy.
+            " FROM InvProductoAlmacen LEFT JOIN TempDemanda ON TempDemanda.ProdID=InvProductoAlmacen.PTAL_ProdId AND TempDemanda.PvarID=InvProductoAlmacen.PTAL_PvarID
             WHERE InvProductoAlmacen.PTAL_Estatus<>'B'
-            AND InvProductoAlmacen.PTAL_Demanda<>TempExiPXC.Existencia
-            AND InvProductoAlmacen.PTAL_AlmacenCataID=".$intCode;
+            AND InvProductoAlmacen.PTAL_AlmacenCataID=".$intCode.
+            " AND ifnull(InvProductoAlmacen.PTAL_Demanda,0)<>TempDemanda.Demanda;";            
             $stmt = $db->prepare($strSql);
-            $stmt->execute();  
-            //INSERTA LOS QUE NO EXISTEN PXA
-            $strSql = "INSERT INTO InvProductoAlmacen(PTAL_AlmacenCataID,PTAL_ProdId,PTAL_Demanda,PTAL_PvarID,PTAL_UsuaDate)
-            SELECT ".$intCode." AS AlmaID,TempExiPXC.ProdID,TempExiPXC.Existencia,TempExiPXC.PvarID,$gstrFechaHoy
-            FROM TempExiPXC WHERE TempExiPXC.ProdID NOT IN (SELECT InvProductoAlmacen.PTAL_ProdId FROM InvProductoAlmacen 
-            WHERE InvProductoAlmacen.PTAL_ProdId=TempExiPXC.ProdID AND TempExiPXC.PvarID=InvProductoAlmacen.PTAL_PvarID AND InvProductoAlmacen.PTAL_Estatus<>'B' AND PTAL_AlmacenCataID=".$intCode.")";
-            $stmt = $db->prepare($strSql);
-            $stmt->execute();            
+            $stmt->execute();              
           break;
 
         }        

@@ -1,39 +1,4 @@
--- SQLite
---13979
---SELECT * FROM TempExiPXC
---SELECT * FROM InvMovimiento ORDER BY InvMovimiento.MOIN_MoinId DESC
-
 /*
-
-CREATE TEMPORARY TABLE TempInvPxC AS
-
-SELECT *
-FROM InvProductoContenedor INNER JOIN TempInvPxC ON TempInvPxC.PtcoId=InvProductoContenedor.InvProductoContenedor.PTCO_PtcoId;
-
-
-UPDATE InvProductoContenedor 
-SET (PTCO_Existencia) = (SELECT Existencia FROM TempInvPxC 
-                        WHERE TempInvPxC.PtcoId=InvProductoContenedor.PTCO_PtcoId)
-WHERE InvProductoContenedor.PTCO_PtcoId IN (SELECT TempInvPxC.PtcoId FROM TempInvPxC);
-
-SELECT *
-FROM InvProductoContenedor INNER JOIN TempInvPxC ON TempInvPxC.PtcoId=InvProductoContenedor.PTCO_PtcoId;
-
-INSERT INTO InvProductoContenedor(PTCO_PtcoId, PTCO_contID,PTCO_ProdId,PTCO_Existencia,PTCO_PvarID,PTCO_UsuaDate)
-
-INSERT INTO InvProductoContenedor(PTCO_PtcoId, PTCO_contID,PTCO_ProdId,PTCO_Existencia,PTCO_PvarID,PTCO_UsuaDate)
-SELECT PtcoId,contID,ProdId,Existencia,PvarID,strftime('%Y/%m/%d %H:%M:%S',datetime('now','localtime')) FROM TempInvPxC;
-
-SELECT * FROM InvMovimiento WHERE InvMovimiento.MOIN_MoinId=13979
-
-DELETE FROM InvProductoContenedor WHERE InvProductoContenedor.PTCO_PtcoId IN (SELECT PtcoId FROM TempInvPxC WHERE PtcoId>0);
-INSERT INTO InvProductoContenedor(PTCO_contID,PTCO_ProdId,PTCO_Existencia,PTCO_PvarID,PTCO_UsuaDate)
-SELECT contID,ProdId,Existencia,PvarID,strftime('%Y/%m/%d %H:%M:%S',datetime('now','localtime')) FROM TempInvPxC WHERE PtcoId>0;
-
-INSERT OR REPLACE INTO InvProductoContenedor(PTCO_PtcoId, PTCO_contID,PTCO_ProdId,PTCO_Existencia,PTCO_PvarID,PTCO_UsuaDate)
-SELECT PtcoId,contID,ProdId,Existencia,PvarID,strftime('%Y/%m/%d %H:%M:%S',datetime('now','localtime')) FROM TempInvPxC;
-
-
 
 SELECT * FROM InvProductoContenedor WHERE PTCO_UsuaDate > '2018-12-30' ORDER BY PTCO_UsuaDate DESC
 
@@ -56,5 +21,31 @@ FROM TempInvPxC LEFT JOIN InvProductoAlmacen ON InvProductoAlmacen.PTAL_ProdID=T
 AND InvProductoAlmacen.PTAL_PvarID=TempInvPxC.PvarID AND InvProductoAlmacen.PTAL_Estatus='A'
 GROUP BY InvProductoAlmacen.PTAL_PtalID,ProdId,PvarID;
 
+
+15669
+
+SELECT * FROM InvMovimiento WHERE InvMovimiento.MOIN_MoinId=15669
+
+
+SELECT * FROM InvProductoContenedor WHERE PTCO_UsuaDate > '2019-05-30' ORDER BY PTCO_UsuaDate DESC;
+
+            SELECT * FROM InvProductoAlmacen where InvProductoAlmacen.PTAL_UsuaDate > '2019-05-30'
+            ORDER BY InvProductoAlmacen.PTAL_ProdID, InvProductoAlmacen.PTAL_PvarID;
+
+            SELECT * FROM IngProducto WHERE IngProducto.PROD_PRODID=119;
+
+            SELECT * FROM IngProductoVariable WHERE PVAR_PVARID=2049;
+
+
+
+
+SELECT AUX.PTAL_PTALID,InvProductoAlmacen.PTAL_PTALID
+FROM InvProductoAlmacen INNER JOIN 
+(
+
 */
-SELECT * FROM InvProductoAlmacen WHERE InvProductoAlmacen.PTAL_UsuaDate> '2018-12-30' ORDER BY PTAL_UsuaDate DESC
+
+UPDATE InvFisico 
+                     SET INFI_AEntradaId=0,INFI_ASalidaId=15670,INFI_Estatus='V'
+                    ,INFI_UsuaDate=strftime('%Y/%m/%d %H:%M:%S',datetime('now','localtime')) , INFI_UsuaID=1 WHERE INFI_AlmaId=73 AND INFI_Fecha=2019-06-10 16:45:59 AND INFI_Estatus<>'B';
+

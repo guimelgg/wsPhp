@@ -86,7 +86,12 @@ if ($db) {
         $result= new \stdClass();
         $result->Resultado = pa_MOIN_abcInvMovimiento($intCode, $strXml, $intUsrId, $strIpAddress);
         $strResultado=json_encode($result);
-    break;    
+    break;   
+    case "pa_PTAL_abcInvProductoAlmacen":
+        $result= new \stdClass();
+        $result->Resultado = pa_PTAL_abcInvProductoAlmacen($intCode, $strXml, $intUsrId, $strIpAddress);
+        $strResultado=json_encode($result);
+    break;        
     default:
         $xDoc= new SimpleXMLElement($strXml);
         $strSql="SELECT * FROM paraCatalogo WHERE CATA_CataID=102 ORDER BY CATA_CataID";        
