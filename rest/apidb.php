@@ -91,7 +91,42 @@ if ($db) {
         $result= new \stdClass();
         $result->Resultado = pa_PTAL_abcInvProductoAlmacen($intCode, $strXml, $intUsrId, $strIpAddress);
         $strResultado=json_encode($result);
-    break;        
+    break;  
+    case "pa_UBIC_abcInvUbicacion":
+        $result= new \stdClass();
+        $result->Resultado = pa_UBIC_abcInvUbicacion($intCode, $strXml, $intUsrId, $strIpAddress);
+        $strResultado=json_encode($result);
+    break;      
+    case "pa_CAJA_abcVtaCaja":
+        $result= new \stdClass();
+        $result->Resultado = pa_CAJA_abcVtaCaja($intCode, $strXml, $intUsrId, $strIpAddress);
+        $strResultado=json_encode($result);
+    break;      
+    case "pa_PEDI_abcVtaPedido":
+        $result= new \stdClass();
+        $result->Resultado = pa_PEDI_abcVtaPedido($intCode, $strXml, $intUsrId, $strIpAddress);
+        $strResultado=json_encode($result);
+    break;      
+    case "pa_PROV_abcComProveedor":
+        $result= new \stdClass();
+        $result->Resultado = pa_PROV_abcComProveedor($intCode, $strXml, $intUsrId, $strIpAddress);
+        $strResultado=json_encode($result);
+    break;      
+    case "pa_ODCP_abcComOrdenCompra":
+        $result= new \stdClass();
+        $result->Resultado = pa_ODCP_abcComOrdenCompra($intCode, $strXml, $intUsrId, $strIpAddress);
+        $strResultado=json_encode($result);
+    break;      
+    case "pa_MOCC_abcCxpMovimiento":
+        $result= new \stdClass();
+        $result->Resultado = pa_MOCC_abcCxpMovimiento($intCode, $strXml, $intUsrId, $strIpAddress);
+        $strResultado=json_encode($result);
+    break;      
+    case "pa_Direccion":
+        $result= new \stdClass();
+        $result->Resultado = pa_Direccion($strTipo, $intCode, $strXml, $intUsrId);
+        $strResultado=json_encode($result);
+    break;                              
     default:
         $xDoc= new SimpleXMLElement($strXml);
         $strSql="SELECT * FROM paraCatalogo WHERE CATA_CataID=102 ORDER BY CATA_CataID";        
