@@ -27,12 +27,12 @@ include('db.php');
 connectDB($strDBName);
 //echo ($db ? "db SI" : "db NO");
 if ($db) {
-    $gstrFechaHoy="strftime('%Y/%m/%d %H:%M:%S',datetime('now','localtime'))";
+    $gstrFechaHoy="strftime('%Y-%m-%d %H:%M:%S',datetime('now','localtime'))";
     include('clsEnt.php');
     include('clsPos.php');
     switch ($strOpcion) {
     case "GetFechaServer":
-        $strSql="SELECT strftime('%d/%m/%Y %H:%M',datetime('now','localtime')) Fecha";
+        $strSql="SELECT strftime('%d/%m/%Y %H:%M:%S',datetime('now','localtime')) Fecha";
         $STH = $db->prepare($strSql);
         $STH->execute();
         $result= $STH->fetch();
@@ -60,7 +60,7 @@ if ($db) {
         $strResultado=json_encode($result);
     break;
     case "GetEsquema":
-        $strSql="SELECT BDES_Script FROM paraBdEsquema WHERE BDES_Fecha>".$Parametro1;
+        $strSql="SELECT BDES_Script FROM paraBdEsquema WHERE BDES_Fecha>'".$Parametro1."'";
         $result = $db->query($strSql);
         $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));
     break;

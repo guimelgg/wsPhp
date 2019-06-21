@@ -598,7 +598,7 @@ function pa_INFI_abcInvFisico($intCode, $strXml, $intUsrId, $strIpAddress)
                 }
             }
                 //ACTUALIZA LA EXISTENCIA EN ALMACENES
-                pa_PTAL_abcInvProductoAlmacen($tblNombre['INFI_AlmaId'], '<InvProductoAlmacen Accion="EXIPXC" />', $intUsrId, $strIpAddress);
+                pa_PTAL_abcInvProductoAlmacen($tblNombre['INFI_AlmaId'], '<root><InvProductoAlmacen Accion="EXIPXC" /></root>', $intUsrId, $strIpAddress);
           break;
           default:
           break;
@@ -782,6 +782,9 @@ function pa_MOIN_abcInvMovimiento($intCode, $strXml, $intUsrId, $strIpAddress)
             $strSql="UPDATE InvMovimiento SET MOIN_Estatus= 'B' ,MOIN_UsuaDate=$gstrFechaHoy, MOIN_UsuaID=? WHERE MOIN_MoinId =?";
             $stmt = $db->prepare($strSql);
             $stmt->execute([$intUsrId,$intCode]);
+            $strSql="UPDATE InvMovimientoDet SET MODT_Estatus= 'B' ,MODT_UsuaDate=$gstrFechaHoy, MODT_UsuaID=? WHERE MODT_MoinID =?";
+            $stmt = $db->prepare($strSql);
+            $stmt->execute([$intUsrId,$intCode]);            
           break;
           case "C":
             $strSql = "UPDATE InvMovimiento SET 
@@ -954,7 +957,7 @@ function sMoinAfectaExistencia($intCode, $intAlmacenId, $strSigno)
         if ($row) {
             $strEstatus=$row['MOIN_Estatus'];
         }
-        if ($strEstatus!="P") {
+        if (($strEstatus!="P") && ($strEstatus!="B")) {
             $strSql="CREATE TEMP VIEW TempInvPxC AS
             SELECT  InvMovimientoDet.MODT_ContID contID,InvMovimientoDet.MODT_ProdID ProdId,SUM(InvMovimientoDet.MODT_Cantidad) Existencia,InvMovimientoDet.MODT_PvarID PvarID
             FROM InvMovimientoDet WHERE InvMovimientoDet.MODT_MoinID=".$intCode.
@@ -1301,20 +1304,20 @@ function pa_CAJA_abcVtaCaja($intCode, $strXml, $intUsrId, $strIpAddress)
         //Cambios de Detalle
         if ($strAccion != "B") {
             $strSigno="";
-            if ($strAccon == "R") {
+            if ($strAccion == "R") {
                 $strSigno="-";
             }
             foreach ($xDoc->VtaCaja->VtaCajaDet as $tblDetalle) {
                 switch ($tblDetalle['Accion']) {
                   case "A":
-                    $strSql="INSERT INTO VtaCajaDet (CAJD_CajaID,CAJD_MonedaID,CAJD_FCobroID,CAJD_Importe,CAJD_PediID,CAJD_UsuaID,CAJD_Referencia,CAJD_UsuaDate)";
+                    $strSql="INSERT INTO VtaCajaDet (CAJD_CajaID,CAJD_MonedaID,CAJD_FCobroID,CAJD_Importe,CAJD_PediID,CAJD_UsuaID,CAJD_Referencia,CAJD_UsuaDate";
                     if ($strAccion == "C") {
-                        $strSql .= ",CAJD_Estatus) VALUES (?,?,?,?,?,?,?,$gstrFechaHoy,'C')";
+                        $strSql .= ",CAJD_Estatus) VALUES (?,?,?,?,?,?,?,".$gstrFechaHoy.",'C')";
                     } else {
                         $strSql .= ") VALUES (?,?,?,?,?,?,?,$gstrFechaHoy)";
                     }
                     $stmt = $db->prepare($strSql);
-                    $stmt->execute([intval($intCode),$tblDetalle['CAJD_MonedaID'],$tblDetalle['CAJD_FCobroID'],$tblDetalle['CAJD_Importe'],$tblDetalle['CAJD_PediID'],$intUsrId,$tblDetalle['CAJD_Referencia']]);
+                    $stmt->execute([intval($intCode),intval($tblDetalle['CAJD_MonedaID']),intval($tblDetalle['CAJD_FCobroID']),$tblDetalle['CAJD_Importe'],intval($tblDetalle['CAJD_PediID']),$intUsrId,$tblDetalle['CAJD_Referencia']]);
                     break;
                   case "C":
                     $strSql="UPDATE VtaCajaDet SET CAJD_MonedaID=:CAJD_MonedaID,CAJD_FCobroID=:CAJD_FCobroID,CAJD_Importe=:CAJD_Importe,CAJD_PediID=:CAJD_PediID,CAJD_UsuaID=:CAJD_UsuaID 
