@@ -789,7 +789,7 @@ CREATE TABLE [cAsignar] (
 , CONSTRAINT [PK_cAsignar] PRIMARY KEY ([ASIG_AsigID])
 );
 CREATE TABLE [VtaCajaDet] (
-  [CAJD_CajdID] int  NOT NULL
+  [CAJD_CajdID] INTEGER  NOT NULL
 , [CAJD_CajaID] int  NOT NULL
 , [CAJD_MonedaID] int  NOT NULL
 , [CAJD_FCobroID] int  NOT NULL
@@ -803,7 +803,7 @@ CREATE TABLE [VtaCajaDet] (
 , CONSTRAINT [PK__VtaCajaDet__000000000000063C] PRIMARY KEY ([CAJD_CajdID])
 );
 CREATE TABLE [VtaCaja] (
-  [CAJA_CajaID] int  NOT NULL
+  [CAJA_CajaID] INTEGER  NOT NULL
 , [CAJA_NombreID] int  NOT NULL
 , [CAJA_FechaApertura] datetime current_timestamp NOT NULL
 , [CAJA_FechaCierre] datetime NULL

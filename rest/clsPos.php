@@ -1204,6 +1204,9 @@ function pa_CONT_ConsultaInvContenedor($Accion, $Code1, $Parametro1, $Parametro2
             $strSql = "SELECT MIN(CONT_ContID) AS CONT_ContID
              FROM (InvContenedor INNER JOIN InvUbicacion ON InvContenedor.CONT_ubicCataID=InvUbicacion.UBIC_UbicCataID)
              WHERE (InvContenedor.CONT_Estatus<>'B') AND (InvUbicacion.UBIC_Estatus<>'B') AND InvUbicacion.UBIC_AlmaID=".$Code1;
+             $stmt = $db->prepare($strSql);
+             $stmt->execute();
+            return $stmt;
         break;
         }
     } else {
@@ -1289,10 +1292,10 @@ function pa_CAJA_abcVtaCaja($intCode, $strXml, $intUsrId, $strIpAddress)
         $strAccion=$tblNombre['Accion'];
         switch ($strAccion) {
           case "A":
-            $strSql="INSERT INTO VtaCaja (CAJA_NombreID,CAJA_FechaApertura,CAJA_UsuaID,CAJA_UsuaDate))
+            $strSql="INSERT INTO VtaCaja (CAJA_NombreID,CAJA_FechaApertura,CAJA_UsuaID,CAJA_UsuaDate)
             VALUES (?,$gstrFechaHoy,?,$gstrFechaHoy)";
             $stmt = $db->prepare($strSql);
-            $stmt->execute([$tblNombre['CAJA_NombreID'],intUsrId]);
+            $stmt->execute([$tblNombre['CAJA_NombreID'],$intUsrId]);
             $intCode=$db->lastInsertId();
           break;
           case "B":
@@ -1310,14 +1313,18 @@ function pa_CAJA_abcVtaCaja($intCode, $strXml, $intUsrId, $strIpAddress)
             foreach ($xDoc->VtaCaja->VtaCajaDet as $tblDetalle) {
                 switch ($tblDetalle['Accion']) {
                   case "A":
-                    $strSql="INSERT INTO VtaCajaDet (CAJD_CajaID,CAJD_MonedaID,CAJD_FCobroID,CAJD_Importe,CAJD_PediID,CAJD_UsuaID,CAJD_Referencia,CAJD_UsuaDate";
-                    if ($strAccion == "C") {
-                        $strSql .= ",CAJD_Estatus) VALUES (?,?,?,?,?,?,?,".$gstrFechaHoy.",'C')";
+                    $strSql="INSERT INTO VtaCajaDet (CAJD_CajaID,CAJD_MonedaID,CAJD_FCobroID,CAJD_Importe,CAJD_PediID
+                        ,CAJD_UsuaID,CAJD_Referencia,CAJD_UsuaDate,CAJD_Estatus)
+                        VALUES(".$intCode.",".intval($tblDetalle['CAJD_MonedaID']).",".intval($tblDetalle['CAJD_FCobroID']).",".$strSigno.intval($tblDetalle['CAJD_Importe']).",".intval($tblDetalle['CAJD_PediID'])
+                        .",".$intUsrId.",'".$tblDetalle['CAJD_Referencia']."',".$gstrFechaHoy.",'".($strAccion == "C"? "C":"A")."')";
+                    /*if ($strAccion == "C") {
+                        $strSql .= " VALUES (?,?,?,?,?,?,?,".$gstrFechaHoy.",'C')";
                     } else {
                         $strSql .= ") VALUES (?,?,?,?,?,?,?,$gstrFechaHoy)";
-                    }
+                    }*/
                     $stmt = $db->prepare($strSql);
-                    $stmt->execute([intval($intCode),intval($tblDetalle['CAJD_MonedaID']),intval($tblDetalle['CAJD_FCobroID']),$tblDetalle['CAJD_Importe'],intval($tblDetalle['CAJD_PediID']),$intUsrId,$tblDetalle['CAJD_Referencia']]);
+                    $stmt->execute();
+                    //$stmt->execute([intval($intCode),intval($tblDetalle['CAJD_MonedaID']),intval($tblDetalle['CAJD_FCobroID']),$tblDetalle['CAJD_Importe'],intval($tblDetalle['CAJD_PediID']),$intUsrId,$tblDetalle['CAJD_Referencia']]);
                     break;
                   case "C":
                     $strSql="UPDATE VtaCajaDet SET CAJD_MonedaID=:CAJD_MonedaID,CAJD_FCobroID=:CAJD_FCobroID,CAJD_Importe=:CAJD_Importe,CAJD_PediID=:CAJD_PediID,CAJD_UsuaID=:CAJD_UsuaID 
@@ -1343,24 +1350,31 @@ function pa_CAJA_abcVtaCaja($intCode, $strXml, $intUsrId, $strIpAddress)
             }
             //FIN Detalle
         }
-        if ($strAccion == "C") {//CIERRE DE CAJA
-            $strSql = "UPDATE VtaCaja SET CAJA_FechaCierre = ".$gstrFechaHoy.",CAJA_UsuaID = ".$intUsrId.",CAJA_UsuaDate = ".$gstrFechaHoy.",CAJA_Estatus = 'CERRADA'
-             WHERE CAJA_CajaID = ".$intCode;
-            $stmt = $db->prepare($strSql);
-            $stmt->execute();
-            //INSERTA LOS AJUSTES SI EXISTIERON DIFERENCIAS
-            $strSql = "INSERT INTO VtaCajaDet(CAJD_CajaID, CAJD_MonedaID, CAJD_FCobroID, CAJD_Importe, CAJD_PediID, CAJD_UsuaID, CAJD_Referencia,CAJD_UsuaDate)
-             SELECT VtaCajaDet_1.CAJD_CajaID, INTE.MonedaID, INTE.FCobroID, VtaCajaDet_1.CAJD_Importe - INTE.Importe AS Ajuste, 0 AS PediID, VtaCajaDet_1.CAJD_PediID
-             ,'AJUSTE POR DIFERENCIA EN CIERRE' AS Referencia,".$gstrFechaHoy.
-             " FROM ((SELECT CAJD_MonedaID AS MonedaID, CAJD_FCobroID AS FCobroID, SUM(CAJD_Importe) AS Importe, CAJD_CajaID
-                      FROM VtaCajaDet VtaCajaDet_2
-                      WHERE (CAJD_CajaID =" . $intCode . ") AND (CAJD_Estatus = 'A')
-                      GROUP BY CAJD_MonedaID, CAJD_FCobroID, CAJD_CajaID) INTE LEFT OUTER JOIN
-              VtaCajaDet VtaCajaDet_1 ON VtaCajaDet_1.CAJD_MonedaID = INTE.MonedaID AND VtaCajaDet_1.CAJD_FCobroID = INTE.FCobroID AND
-                      VtaCajaDet_1.CAJD_CajaID = INTE.CAJD_CajaID)
-              WHERE (VtaCajaDet_1.CAJD_Estatus = 'C') AND (VtaCajaDet_1.CAJD_Importe - INTE.Importe > 0)";
-            $stmt = $db->prepare($strSql);
-            $stmt->execute();
+        if (($strAccion == "C") || ($strAccion == "CAUTO")) {//CIERRE DE CAJA, CIERRE AUTOMATICO
+            $strSql = "UPDATE VtaCaja SET CAJA_FechaCierre = ".$gstrFechaHoy.",CAJA_UsuaID = ".$intUsrId.
+            ",CAJA_UsuaDate = ".$gstrFechaHoy.",CAJA_Estatus = 'CERRADA'  WHERE CAJA_CajaID = ".$intCode;
+            $stmt = $db->prepare($strSql);$stmt->execute();
+            $strSql = "CREATE TEMP VIEW TempCajaDet AS 
+                SELECT CAJD_MonedaID AS MonedaID, CAJD_FCobroID AS FCobroID, SUM(CAJD_Importe) AS Importe, CAJD_CajaID
+                FROM VtaCajaDet
+                WHERE CAJD_CajaID =" . $intCode . " AND CAJD_Estatus = 'A' AND CAJD_Importe<>0
+                GROUP BY CAJD_MonedaID, CAJD_FCobroID, CAJD_CajaID;";
+            $stmt = $db->prepare($strSql);$stmt->execute();                
+            if ($strAccion == "C") {
+                //INSERTA LOS AJUSTES SI EXISTIERON DIFERENCIAS
+                $strSql = "INSERT INTO VtaCajaDet(CAJD_CajaID, CAJD_MonedaID, CAJD_FCobroID, CAJD_Importe, CAJD_PediID, CAJD_UsuaID, CAJD_Referencia,CAJD_UsuaDate)
+                SELECT VtaCajaDet_1.CAJD_CajaID, INTE.MonedaID, INTE.FCobroID, VtaCajaDet_1.CAJD_Importe - INTE.Importe AS Ajuste, 0 AS PediID, VtaCajaDet_1.CAJD_PediID
+                ,'AJUSTE POR DIFERENCIA EN CIERRE' AS Referencia,".$gstrFechaHoy.
+                " FROM TempCajaDet INTE LEFT JOIN VtaCajaDet VtaCajaDet_1 ON VtaCajaDet_1.CAJD_MonedaID = INTE.MonedaID AND VtaCajaDet_1.CAJD_FCobroID = INTE.FCobroID 
+                AND VtaCajaDet_1.CAJD_CajaID = INTE.CAJD_CajaID AND VtaCajaDet_1.CAJD_Estatus = 'C'
+                WHERE ifnull(VtaCajaDet_1.CAJD_Importe,0) - INTE.Importe <> 0";
+                $stmt = $db->prepare($strSql); $stmt->execute();
+            } else if ($strAccion == "CAUTO"){
+                $strSql = "INSERT INTO VtaCajaDet(CAJD_CajaID, CAJD_MonedaID, CAJD_FCobroID, CAJD_Importe, CAJD_PediID, CAJD_UsuaID, CAJD_Referencia,CAJD_UsuaDate,CAJD_Estatus)
+                    SELECT CAJD_CajaID,MonedaID,FCobroID,Importe,0,".$intUsrId.",'CIERRE AUTOMATICO',".$gstrFechaHoy.",'C'
+                     FROM TempCajaDet;";
+                $stmt = $db->prepare($strSql); $stmt->execute();                     
+            }
         }
     }
     return $intCode;
@@ -1387,24 +1401,11 @@ function pa_PEDI_abcVtaPedido($intCode, $strXml, $intUsrId, $strIpAddress)
             $row= $stmt->fetch();
             if ($row) {
                 $intFolio= $row['Resultado'];
-            }
-            $strPEDI_FechaEnv=$gstrFechaHoy;
-            if ($tblNombre['PEDI_FechaEnv']) {
-                $strPEDI_FechaEnv=$tblNombre['PEDI_FechaEnv'];
-            }
-            $strPEDI_FechaReg=$gstrFechaHoy;
-            if ($tblNombre['PEDI_FechaReg']) {
-                if ($tblNombre['PEDI_FechaReg'] != "") {
-                    $strPEDI_FechaReg=$tblNombre['PEDI_FechaReg'];
-                }
-            }
-
-
-
-            $strSql="INSERT INTO VtaPedido (PEDI_Numero,PEDI_FechaReg,PEDI_UsuaID,PEDI_FechaEnv,PEDI_AlmacenID,PEDI_SubTotal,PEDI_Descuento,PEDI_Iva,PEDI_Total,PEDI_ClieID,PEDI_DireID,PEDI_Estatus,PEDI_UsuaDate))
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,$gstrFechaHoy)";
+            }            
+            $strSql="INSERT INTO VtaPedido (PEDI_Numero,PEDI_FechaReg,PEDI_UsuaID,PEDI_FechaEnv,PEDI_AlmacenID,PEDI_SubTotal,PEDI_Descuento,PEDI_Iva,PEDI_Total,PEDI_ClieID,PEDI_DireID,PEDI_Estatus,PEDI_UsuaDate)
+            VALUES (?,?,?,$gstrFechaHoy,?,?,?,?,?,?,?,?,$gstrFechaHoy)";
             $stmt = $db->prepare($strSql);
-            $stmt->execute([$intFolio,$strPEDI_FechaReg,$intUsrId,$strPEDI_FechaEnv,$intAlmacenId,$tblNombre['PEDI_SubTotal'],$tblNombre['PEDI_Descuento'],$tblNombre['PEDI_Iva'],$tblNombre['PEDI_Total'],$tblNombre['PEDI_ClieID'],$tblNombre['PEDI_DireID'],$tblNombre['PEDI_Estatus']]);
+            $stmt->execute([$intFolio,$tblNombre['PEDI_FechaReg'],$intUsrId,$intAlmacenId,$tblNombre['PEDI_SubTotal'],$tblNombre['PEDI_Descuento'],$tblNombre['PEDI_Iva'],$tblNombre['PEDI_Total'],$tblNombre['PEDI_ClieID'],$tblNombre['PEDI_DireID'],$tblNombre['PEDI_Estatus']]);
             $intCode=$db->lastInsertId();
           break;
           case "B":
@@ -1419,11 +1420,10 @@ function pa_PEDI_abcVtaPedido($intCode, $strXml, $intUsrId, $strIpAddress)
             $stmt = $db->prepare($strSql);$stmt->execute([$intCode]);
           break;
           case "C":
-            $strSql="UPDATE VtaPedido SET PEDI_UsuaID=:PEDI_UsuaID, PEDI_UsuaDate=$gstrFechaHoy ,PEDI_FechaEnv=:PEDI_FechaEnv,PEDI_AlmacenID=:PEDI_AlmacenID,PEDI_SubTotal=:PEDI_SubTotal,PEDI_Descuento=:PEDI_Descuento,PEDI_Iva=:PEDI_Iva
+            $strSql="UPDATE VtaPedido SET PEDI_UsuaID=:PEDI_UsuaID, PEDI_UsuaDate=$gstrFechaHoy ,PEDI_FechaEnv=$gstrFechaHoy,PEDI_AlmacenID=:PEDI_AlmacenID,PEDI_SubTotal=:PEDI_SubTotal,PEDI_Descuento=:PEDI_Descuento,PEDI_Iva=:PEDI_Iva
             ,PEDI_Total=:PEDI_Total,PEDI_ClieID=:PEDI_ClieID, PEDI_DireID=:PEDI_DireID,PEDI_Estatus=:PEDI_Estatus WHERE PEDI_PediID =:PEDI_PediID";
             $stmt = $db->prepare($strSql);
-            $stmt->bindParam(':PEDI_UsuaID', $intUsrId, PDO::PARAM_INT);
-            $stmt->bindParam(':PEDI_FechaEnv', $tblNombre['PEDI_FechaEnv'], PDO::PARAM_STR);
+            $stmt->bindParam(':PEDI_UsuaID', $intUsrId, PDO::PARAM_INT);            
             $stmt->bindParam(':PEDI_AlmacenID', intval($tblNombre['PEDI_AlmacenID']), PDO::PARAM_INT);
             $stmt->bindParam(':PEDI_SubTotal', $tblNombre['PEDI_SubTotal'], PDO::PARAM_STR);
             $stmt->bindParam(':PEDI_Descuento', $tblNombre['PEDI_Descuento'], PDO::PARAM_STR);
@@ -1443,7 +1443,7 @@ function pa_PEDI_abcVtaPedido($intCode, $strXml, $intUsrId, $strIpAddress)
                   case "A":
                     $strSql = "INSERT INTO VtaPedidoDet (DEPE_PediID,DEPE_ProdID,DEPE_Pedido,DEPE_Surtido,DEPE_UsuaID,DEPE_Precio,DEPE_PromID,DEPE_Obs,DEPE_DescP,DEPE_PrecID,DEPE_IvaP,DEPE_PvarID" . ($tblDetalle['DEPE_Desc'] ? ",DEPE_Desc" : "") . ($tblDetalle['DEPE_FEntrega'] ? ",DEPE_FEntrega" : "") . ",DEPE_UsuaDate)
                     SELECT " . $intCode . "," . $tblDetalle['DEPE_ProdID'] . "," . $tblDetalle['DEPE_Pedido'] . "," . $tblDetalle['DEPE_Surtido'] . "," . $intUsrId . "," . $tblDetalle['DEPE_Precio'] .
-                    "," . $tblDetalle['DEPE_PromID'] . ",'" . $tblDetalle['DEPE_Obs'] . "'," . $tblDetalle['DEPE_DescP'] . "," . $tblDetalle['DEPE_PrecID'] . "," . $tblDetalle['DEPE_IvaP'] .
+                    "," . intval($tblDetalle['DEPE_PromID']) . ",'" . $tblDetalle['DEPE_Obs'] . "'," . $tblDetalle['DEPE_DescP'] . "," . $tblDetalle['DEPE_PrecID'] . "," . $tblDetalle['DEPE_IvaP'] .
                     "," . $tblDetalle['DEPE_PvarID'] . ($tblDetalle['DEPE_Desc'] ? ",".$tblDetalle['DEPE_Desc'] : "") . ($tblDetalle['DEPE_FEntrega'] ? ",'".$tblDetalle['DEPE_FEntrega']."'" : "") . "," . $gstrFechaHoy;
                     $stmt = $db->prepare($strSql);
                     $stmt->execute();
@@ -1451,7 +1451,7 @@ function pa_PEDI_abcVtaPedido($intCode, $strXml, $intUsrId, $strIpAddress)
                   case "C":
                   $strSql = "UPDATE VtaPedidoDet SET 
                     DEPE_PediID = " . $intCode . ",DEPE_ProdID =" . $tblDetalle['DEPE_ProdID'] . ",DEPE_Pedido = " . $tblDetalle['DEPE_Pedido'] . ",DEPE_Surtido = " . $tblDetalle['DEPE_Surtido'] .
-                    ",DEPE_UsuaID = ". $intUsrId . ",DEPE_UsuaDate = " . $gstrFechaHoy . ",DEPE_Precio = " . $tblDetalle['DEPE_Precio'] . ",DEPE_PromID = " . $tblDetalle['DEPE_PromID'] .
+                    ",DEPE_UsuaID = ". $intUsrId . ",DEPE_UsuaDate = " . $gstrFechaHoy . ",DEPE_Precio = " . $tblDetalle['DEPE_Precio'] . ",DEPE_PromID = " . intval($tblDetalle['DEPE_PromID']) .
                     ",DEPE_Obs = '" . $tblDetalle['DEPE_Obs'] . "',DEPE_DescP = " . $tblDetalle['DEPE_DescP'] . ",DEPE_PrecID = " . $tblDetalle['DEPE_PrecID'] . ",DEPE_IvaP = " . $tblDetalle['DEPE_IvaP'] .
                     ",DEPE_PvarID = " . $tblDetalle['DEPE_PvarID']
                     . ($tblDetalle['DEPE_Desc'] ? ",DEPE_Desc = '".$tblDetalle['DEPE_Desc']."'" : "")
@@ -1480,6 +1480,7 @@ function pa_PEDI_AuxConsumos($intPedidoId, $intAlmacenId, $intUsrId)
 {
     global $db;
     global $gstrFechaHoy;
+    global $strDBName;
     $intResultado=0;
     $intMoinId=0;
     $intItemsSurtidos=0;
@@ -1550,21 +1551,24 @@ function pa_PEDI_AuxConsumos($intPedidoId, $intAlmacenId, $intUsrId)
                         //Detalle de la salida
                         //Agregar productos
                         $strSql="INSERT OR REPLACE INTO InvMovimientoDet (MODT_modtID,MODT_MoinID,MODT_ProdID,MODT_ContID,MODT_Cantidad,MODT_UsuaID,MODT_PvarID,MODT_UsuaDate)
-                    SELECT MODT_modtID,".$intMoinId."VtaPedidoDet.DEPE_ProdID,".$intContID.",VtaPedidoDet.DEPE_Surtido*".($intFolio < 0 ? "1" : "-1").",".$intUsrId.
-                        ", ifnull(PVAR_PvarID,0),'".$datHoy.
-                    "' FROM VtaPedidoDet LEFT JOIN IngProductoVariable ON DEPE_PvarID=PVAR_PvarID AND PVAR_Estatus='A'
-                    LEFT JOIN InvMovimientoDet ON VtaPedidoDet.DEPE_ProdID=InvMovimientoDet.MODT_ProdID AND InvMovimientoDet.MODT_PvarID=PVAR_PvarID AND InvMovimientoDet.MODT_Estatus<>'B' 
-                    AND InvMovimientoDet.MODT_ContID=".$intContID." AND InvMovimientoDet.MODT_MoinID=".$intMoinId.
-                    " WHERE VtaPedidoDet.DEPE_PediID=".$intPedidoId." AND VtaPedidoDet.DEPE_Estatus<>'B' AND VtaPedidoDet.DEPE_Surtido>0";
+                            SELECT MODT_modtID,".$intMoinId.",VtaPedidoDet.DEPE_ProdID,".$intContID.",VtaPedidoDet.DEPE_Surtido*".($intFolio < 0 ? "1" : "-1").",".$intUsrId.
+                            ", ifnull(PVAR_PvarID,0),'".$datHoy.
+                            "' FROM VtaPedidoDet LEFT JOIN IngProductoVariable ON DEPE_PvarID=PVAR_PvarID AND PVAR_Estatus='A'
+                            LEFT JOIN InvMovimientoDet ON VtaPedidoDet.DEPE_ProdID=InvMovimientoDet.MODT_ProdID AND InvMovimientoDet.MODT_PvarID=PVAR_PvarID AND InvMovimientoDet.MODT_Estatus<>'B' 
+                            AND InvMovimientoDet.MODT_ContID=".$intContID." AND InvMovimientoDet.MODT_MoinID=".$intMoinId.
+                            " WHERE VtaPedidoDet.DEPE_PediID=".$intPedidoId." AND VtaPedidoDet.DEPE_Estatus<>'B' AND VtaPedidoDet.DEPE_Surtido>0";
                         $stmt = $db->prepare($strSql);
                         $stmt->execute();
                         //Eliminar productos
-                        $strSql="UPDATE InvMovimientoDet SET InvMovimientoDet.MODT_Estatus='B',InvMovimientoDet.MODT_UsuaDate='".$datHoy."',InvMovimientoDet.MODT_UsuaID=".$intUsrId.
-                    " WHERE InvMovimientoDet.MODT_Estatus<>'B' AND InvMovimientoDet.MODT_MoinID=".$intMoinId.
-                    " AND InvMovimientoDet.MODT_UsuaDate<'".$datHoy."'";
+                        $strSql="UPDATE InvMovimientoDet SET MODT_Estatus='B',MODT_UsuaDate='".$datHoy."',MODT_UsuaID=".$intUsrId.
+                            " WHERE MODT_Estatus<>'B' AND MODT_MoinID=".$intMoinId.
+                            " AND MODT_UsuaDate<'".$datHoy."'";
                         $stmt = $db->prepare($strSql);
                         $stmt->execute();
                         //ACTUALIZAR LA EXISTENCIA SUMAR
+                        //nos reconectamos
+                        $db = null;
+                        connectDB($strDBName);
                         sMoinAfectaExistencia($intMoinId, $intAlmacenId, "+");
                     }
                 }
