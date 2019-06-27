@@ -1340,7 +1340,7 @@ function pa_CAJA_abcVtaCaja($intCode, $strXml, $intUsrId, $strIpAddress)
                     $stmt->execute();
                     break;
                   case "B":
-                    $strSql="UPDATE VtaCajaDet SET CAJD_Estatus = 'B', CAJD_UsuaDate=$gstrFechaHoy,PERM_Estatus='B',CAJD_UsuaID=:CAJD_UsuaID WHERE CAJD_CajdID=:CAJD_CajdID";
+                    $strSql="UPDATE VtaCajaDet SET CAJD_Estatus = 'B', CAJD_UsuaDate=$gstrFechaHoy,CAJD_Estatus='B',CAJD_UsuaID=:CAJD_UsuaID WHERE CAJD_CajdID=:CAJD_CajdID";
                     $stmt = $db->prepare($strSql);
                     $stmt->bindParam(':CAJD_UsuaID', $intUsrId, PDO::PARAM_INT);
                     $stmt->bindParam(':CAJD_CajdID', intval($tblDetalle['CAJD_CajdID']), PDO::PARAM_INT);
@@ -1415,6 +1415,13 @@ function pa_PEDI_abcVtaPedido($intCode, $strXml, $intUsrId, $strIpAddress)
                 " WHERE DEPE_PediID=?";
             $stmt = $db->prepare($strSql);$stmt->execute([$intCode]);
           break;
+          case "CANCELA":
+            $strSql="UPDATE VtaPedido SET PEDI_Estatus= 'C' ,PEDI_UsuaDate=$gstrFechaHoy , PEDI_UsuaID=".$intUsrId." WHERE PEDI_PediID =?";
+            $stmt = $db->prepare($strSql);$stmt->execute([$intCode]);
+            $strSql = "UPDATE VtaPedidoDet SET DEPE_Estatus = 'C',DEPE_UsuaDate=".$gstrFechaHoy.", DEPE_UsuaID=".$intUsrId.
+                " WHERE DEPE_PediID=?";
+            $stmt = $db->prepare($strSql);$stmt->execute([$intCode]);
+          break;          
           case "SETESTATUS":
             $strSql="UPDATE VtaPedido SET PEDI_Estatus= '".$tblNombre['PEDI_Estatus']."' ,PEDI_UsuaDate=$gstrFechaHoy , PEDI_UsuaID=".$intUsrId." WHERE PEDI_PediID =?";
             $stmt = $db->prepare($strSql);$stmt->execute([$intCode]);
@@ -1488,13 +1495,15 @@ function pa_PEDI_AuxConsumos($intPedidoId, $intAlmacenId, $intUsrId)
         $bolAfectoExi=false;
         $strNoPedido="";
         $intFolio=0;
-        $strSql = "SELECT PEDI_Numero,ifnull(PEDI_BackOrder,0) PEDI_BackOrder FROM VtaPedido WHERE PEDI_PediID=" . $intPedidoId;
+        $strEstatus="A";
+        $strSql = "SELECT PEDI_Numero,ifnull(PEDI_BackOrder,0) PEDI_BackOrder,PEDI_Estatus FROM VtaPedido WHERE PEDI_PediID=" . $intPedidoId;
         $stmt = $db->prepare($strSql);
         $stmt->execute();
         $row= $stmt->fetch();
         if ($row) {
             $strBO=$row['PEDI_BackOrder'];
             $intFolio=$row['PEDI_Numero'].($strBO!="" ? ".".$strBO : "");
+            $strEstatus=$row['PEDI_Estatus'];
         }
         //Obtener el tipo de movimiento SAL.VENTA O ENT.DEVOLUCION
         $intTipoMovId=0;
@@ -1510,7 +1519,7 @@ function pa_PEDI_AuxConsumos($intPedidoId, $intAlmacenId, $intUsrId)
             $intTipoMovId=$row['CATA_CataID'];
             if ($row['CATA_Desc3'] != "NO CONSUMO AUTOMATICO") {
                 //'Verificar si ya esta surtido el pedido
-                $strSql = "SELECT COUNT(DEPE_DepeID) AS Cuantos FROM VtaPedidoDet WHERE DEPE_Estatus<>'B' AND DEPE_Surtido>0 AND DEPE_PediID=".$intPedidoId;
+                $strSql = "SELECT COUNT(DEPE_DepeID) AS Cuantos FROM VtaPedidoDet WHERE DEPE_Estatus='A' AND DEPE_Surtido>0 AND DEPE_PediID=".$intPedidoId;
                 $stmt = $db->prepare($strSql);
                 $stmt->execute();
                 $row= $stmt->fetch();
@@ -1518,8 +1527,7 @@ function pa_PEDI_AuxConsumos($intPedidoId, $intAlmacenId, $intUsrId)
                     $intItemsSurtidos=$row['Cuantos'];
                 }
                 //'Verificar si ya tiene un movimiento de salida
-                $strSql = "SELECT MOIN_MoinId FROM InvMovimiento 
-             WHERE InvMovimiento.MOIN_TipoMovCataID=".$intTipoMovId." AND InvMovimiento.MOIN_Estatus<>'B' AND InvMovimiento.MOIN_Referencia='".$intPedidoId."'";
+                $strSql = "SELECT MOIN_MoinId FROM InvMovimiento WHERE MOIN_TipoMovCataID=".$intTipoMovId." AND MOIN_Estatus<>'B' AND MOIN_Referencia='".$intPedidoId."'";
                 $stmt = $db->prepare($strSql);
                 $stmt->execute();
                 $row= $stmt->fetch();
@@ -1537,11 +1545,13 @@ function pa_PEDI_AuxConsumos($intPedidoId, $intAlmacenId, $intUsrId)
                     if ($row) {
                         $datHoy=$row['Fecha'];
                     }
-                    if ($intMoinId == 0) {
+                    if (($intMoinId == 0) && ($intItemsSurtidos > 0)) {
                         $intMoinId=fInsertInvMovimiento($intAlmacenId, $intTipoMovId, $datHoy, ($intFolio<0 ? "DEVOLUCION" : "SALIDA")." POR VENTA, PED:".$strNoPedido, $intPedidoId, $intUsrId, "A");
-                    } else {//AFECTA LA EXISTENCIA ACTUAL
+                    } else if ($intMoinId > 0) {//AFECTA LA EXISTENCIA ACTUAL
                         sMoinAfectaExistencia($intMoinId, $intAlmacenId, "-");
-                        $bolAfectoExi = true;
+                        $bolAfectoExi = true;                        
+                    }
+                    if (($intMoinId > 0) && (($strEstatus == "A") || ($strEstatus == "D"))){
                         $intContID=0;
                         $stmt = pa_CONT_ConsultaInvContenedor("DEFAULT", $intAlmacenId, "", "");
                         $row= $stmt->fetch();
@@ -1552,25 +1562,24 @@ function pa_PEDI_AuxConsumos($intPedidoId, $intAlmacenId, $intUsrId)
                         //Agregar productos
                         $strSql="INSERT OR REPLACE INTO InvMovimientoDet (MODT_modtID,MODT_MoinID,MODT_ProdID,MODT_ContID,MODT_Cantidad,MODT_UsuaID,MODT_PvarID,MODT_UsuaDate)
                             SELECT MODT_modtID,".$intMoinId.",VtaPedidoDet.DEPE_ProdID,".$intContID.",VtaPedidoDet.DEPE_Surtido*".($intFolio < 0 ? "1" : "-1").",".$intUsrId.
-                            ", ifnull(PVAR_PvarID,0),'".$datHoy.
-                            "' FROM VtaPedidoDet LEFT JOIN IngProductoVariable ON DEPE_PvarID=PVAR_PvarID AND PVAR_Estatus='A'
+                            ", ifnull(PVAR_PvarID,0),".$gstrFechaHoy.
+                            " FROM VtaPedidoDet LEFT JOIN IngProductoVariable ON DEPE_PvarID=PVAR_PvarID AND PVAR_Estatus='A'
                             LEFT JOIN InvMovimientoDet ON VtaPedidoDet.DEPE_ProdID=InvMovimientoDet.MODT_ProdID AND InvMovimientoDet.MODT_PvarID=PVAR_PvarID AND InvMovimientoDet.MODT_Estatus<>'B' 
                             AND InvMovimientoDet.MODT_ContID=".$intContID." AND InvMovimientoDet.MODT_MoinID=".$intMoinId.
-                            " WHERE VtaPedidoDet.DEPE_PediID=".$intPedidoId." AND VtaPedidoDet.DEPE_Estatus<>'B' AND VtaPedidoDet.DEPE_Surtido>0";
+                            " WHERE VtaPedidoDet.DEPE_PediID=".$intPedidoId." AND VtaPedidoDet.DEPE_Estatus='A' AND VtaPedidoDet.DEPE_Surtido>0";
                         $stmt = $db->prepare($strSql);
                         $stmt->execute();
-                        //Eliminar productos
-                        $strSql="UPDATE InvMovimientoDet SET MODT_Estatus='B',MODT_UsuaDate='".$datHoy."',MODT_UsuaID=".$intUsrId.
-                            " WHERE MODT_Estatus<>'B' AND MODT_MoinID=".$intMoinId.
-                            " AND MODT_UsuaDate<'".$datHoy."'";
-                        $stmt = $db->prepare($strSql);
-                        $stmt->execute();
-                        //ACTUALIZAR LA EXISTENCIA SUMAR
-                        //nos reconectamos
-                        $db = null;
-                        connectDB($strDBName);
-                        sMoinAfectaExistencia($intMoinId, $intAlmacenId, "+");
                     }
+                    //Eliminar productos
+                    $strSql="UPDATE InvMovimientoDet SET MODT_Estatus='B',MODT_UsuaDate=".$gstrFechaHoy.",MODT_UsuaID=".$intUsrId.
+                        " WHERE MODT_Estatus<>'B' AND MODT_MoinID=".$intMoinId.
+                        " AND MODT_UsuaDate<'".$datHoy."'";
+                    $stmt = $db->prepare($strSql);
+                    $stmt->execute();
+                    //ACTUALIZAR LA EXISTENCIA SUMAR
+                    //nos reconectamos
+                    $db = null; connectDB($strDBName);
+                    sMoinAfectaExistencia($intMoinId, $intAlmacenId, "+");                    
                 }
             }
         }
