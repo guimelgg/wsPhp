@@ -1363,8 +1363,8 @@ function pa_CAJA_abcVtaCaja($intCode, $strXml, $intUsrId, $strIpAddress)
             if ($strAccion == "C") {
                 //INSERTA LOS AJUSTES SI EXISTIERON DIFERENCIAS
                 $strSql = "INSERT INTO VtaCajaDet(CAJD_CajaID, CAJD_MonedaID, CAJD_FCobroID, CAJD_Importe, CAJD_PediID, CAJD_UsuaID, CAJD_Referencia,CAJD_UsuaDate)
-                SELECT VtaCajaDet_1.CAJD_CajaID, INTE.MonedaID, INTE.FCobroID, VtaCajaDet_1.CAJD_Importe - INTE.Importe AS Ajuste, 0 AS PediID, VtaCajaDet_1.CAJD_PediID
-                ,'AJUSTE POR DIFERENCIA EN CIERRE' AS Referencia,".$gstrFechaHoy.
+                SELECT VtaCajaDet_1.CAJD_CajaID, INTE.MonedaID, INTE.FCobroID, VtaCajaDet_1.CAJD_Importe - INTE.Importe AS Ajuste, 0 AS PediID,".$intUsrId.
+                ",'AJUSTE POR DIFERENCIA EN CIERRE' AS Referencia,".$gstrFechaHoy.
                 " FROM TempCajaDet INTE LEFT JOIN VtaCajaDet VtaCajaDet_1 ON VtaCajaDet_1.CAJD_MonedaID = INTE.MonedaID AND VtaCajaDet_1.CAJD_FCobroID = INTE.FCobroID 
                 AND VtaCajaDet_1.CAJD_CajaID = INTE.CAJD_CajaID AND VtaCajaDet_1.CAJD_Estatus = 'C'
                 WHERE ifnull(VtaCajaDet_1.CAJD_Importe,0) - INTE.Importe <> 0";
