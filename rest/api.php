@@ -43,7 +43,7 @@ try {
 
     switch ($strOpcion) {//SIN BASE DE DATOS
     case "GetWsConfig"://localhost/wsPhp/rest/api.php
-      $strResultado="wsrest.azurewebsites.net/rest/api.php,wswcf.azurewebsites.net,REST";
+      $strResultado="wsrest.azurewebsites.net/rest/api.php,www.pymeti.com/rest/api.php,REST";
     break;
     case "GetEsquemaInicial":
       $strBase=filter_input(INPUT_GET, 'strBase');
