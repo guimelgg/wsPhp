@@ -42,8 +42,12 @@ try {
     $strResultado="";
 
     switch ($strOpcion) {//SIN BASE DE DATOS
-    case "GetWsConfig"://localhost/wsPhp/rest/api.php
-      $strResultado="wsrest.azurewebsites.net/rest/api.php,www.pymeti.com/rest/api.php,REST";
+    case "GetWsConfig":
+    //localhost/wsPhp/rest/api.php,wswcf.azurewebsites.net/rest/api.php,REST
+    //wswcf.azurewebsites.net,www.pymeti.com/rest/api.php,WCF
+    //wswcf.azurewebsites.net/rest/api.php,www.pymeti.com/rest/api.php,REST
+    //www.pymeti.com/rest/api.php,wswcf.azurewebsites.net/rest/api.php,REST
+      $strResultado="www.pymeti.com/rest/api.php,wswcf.azurewebsites.net/rest/api.php,REST";
     break;
     case "GetEsquemaInicial":
       $strBase=filter_input(INPUT_GET, 'strBase');

@@ -405,7 +405,7 @@ function pa_INFI_abcInvFisico($intCode, $strXml, $intUsrId, $strIpAddress)
             //Obtiene los IDs de Entrada y Salida
             $intEntradaId=0; $intSalidaId=0;
             $strSql = "SELECT MAX(INFI_AEntradaId) AS INFI_AEntradaId,MAX(INFI_ASalidaId) AS INFI_ASalidaId FROM InvFisico WHERE INFI_Estatus<>'B' 
-            AND INFI_AlmaId=:INFI_AlmaId AND INFI_Fecha=:INFI_Fecha";
+            AND INFI_AlmaId=:INFI_AlmaId AND date(INFI_Fecha)=date(:INFI_Fecha)";
             $stmt = $db->prepare($strSql);
             $stmt->bindParam(':INFI_AlmaId', intval($tblNombre['INFI_AlmaId']), PDO::PARAM_INT);
             $stmt->bindParam(':INFI_Fecha', $tblNombre['INFI_Fecha'], PDO::PARAM_STR);
@@ -419,18 +419,23 @@ function pa_INFI_abcInvFisico($intCode, $strXml, $intUsrId, $strIpAddress)
                 $strSql = "UPDATE InvFisico SET INFI_Estatus='A'
                 ,INFI_UsuaDate=$gstrFechaHoy ,INFI_UsuaID=:INFI_UsuaID
                 WHERE INFI_AlmaId=:INFI_AlmaId
-                AND INFI_Fecha=:INFI_Fecha AND INFI_Estatus='V';
-                UPDATE InvMovimientoDet SET MODT_Estatus = 'B' 
-                ,MODT_UsuaDate=$gstrFechaHoy ,MODT_UsuaID=$intUsrId 
-                WHERE (MODT_MoinID =$intEntradaId OR MODT_MoinID =$intSalidaId ) AND MODT_Estatus <> 'B';
-                UPDATE InvMovimiento SET MOIN_Fecha=:MOIN_Fecha 
-                ,MOIN_UsuaDate=$gstrFechaHoy, MOIN_UsuaID=$intUsrId , MOIN_Estatus='A' 
-                WHERE (MOIN_MoinID =$intEntradaId OR MOIN_MoinID =$intSalidaId) AND MOIN_Estatus <> 'B';";
+                AND date(INFI_Fecha)=date(:INFI_Fecha) AND INFI_Estatus='V';";
                 $stmt = $db->prepare($strSql);
                 $stmt->bindParam(':INFI_AlmaId', intval($tblNombre['INFI_AlmaId']), PDO::PARAM_INT);
                 $stmt->bindParam(':INFI_Fecha', $tblNombre['INFI_Fecha'], PDO::PARAM_STR);
-                $stmt->bindParam(':INFI_UsuaID', intval($intUsrId), PDO::PARAM_INT);
-                $stmt->bindParam(':INFI_Fecha', $tblNombre['INFI_Fecha'], PDO::PARAM_STR);
+                $stmt->bindParam(':INFI_UsuaID', intval($intUsrId), PDO::PARAM_INT);                
+                $stmt->execute();                
+
+                $strSql = "UPDATE InvMovimientoDet SET MODT_Estatus = 'B' 
+                ,MODT_UsuaDate=$gstrFechaHoy ,MODT_UsuaID=$intUsrId 
+                WHERE (MODT_MoinID =$intEntradaId OR MODT_MoinID =$intSalidaId ) AND MODT_Estatus <> 'B';";
+                $stmt = $db->prepare($strSql);                
+                $stmt->execute();
+
+                $strSql="UPDATE InvMovimiento SET MOIN_Fecha=:MOIN_Fecha 
+                ,MOIN_UsuaDate=$gstrFechaHoy, MOIN_UsuaID=$intUsrId , MOIN_Estatus='A' 
+                WHERE (MOIN_MoinID =$intEntradaId OR MOIN_MoinID =$intSalidaId) AND MOIN_Estatus <> 'B';";
+                $stmt = $db->prepare($strSql);
                 $stmt->execute();
             } else {
                 //Obtiene la Existencia que habia a X fecha
