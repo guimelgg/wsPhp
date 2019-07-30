@@ -66,6 +66,17 @@ try {
       include('clsRutinas.php');
       echo CrearHash($Accion);
     break;
+    case "zipfileCrea"://Crea archivo zip en una ruta Temp
+      $strDBName = filter_input(INPUT_GET, 'strDBName');
+      if (!$strDBName) {
+        $strDBName = filter_input(INPUT_POST, 'strDBName');
+      }
+      include('clsRutinas.php');
+      echo GzipFile($strDBName);
+    break;
+    case "zipfileElimina"://Elimina archivo
+      unlink($Accion);
+    break;
     default://CON BASE DE DATOS
       include('apidb.php');
     break;
