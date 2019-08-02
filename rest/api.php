@@ -4,15 +4,13 @@ if (!ob_start("ob_gzhandler")) {
     ob_start();
 }
 try {
-    //SELECT name FROM sqlite_master WHERE type='table'
-    /*$rows= count($result);
-    echo "Number of rows: $rows";*/
-    /*
-    $LoginRS__query=sprintf("SELECT username, password FROM member WHERE username=%s AND password=%s",
-    GetSQLValueString($_POST["username"], "text"), GetSQLValueString($password, "text"));
-    */
-    // close the database connection
-    //if (isset($_GET['strDBName']) && $_GET['strDBName']!="" ) {
+  //  
+    $gWsConfig="localhost/wsPhp/rest/api.php,wswcf.azurewebsites.net/rest/api.php,REST";
+      //localhost/wsPhp/rest/api.php,wswcf.azurewebsites.net/rest/api.php,REST
+      //wswcf.azurewebsites.net,www.pymeti.com/rest/api.php,WCF
+      //wswcf.azurewebsites.net/rest/api.php,www.pymeti.com/rest/api.php,REST
+      //www.pymeti.com/rest/api.php,wswcf.azurewebsites.net/rest/api.php,REST
+
     $strOpcion=filter_input(INPUT_GET, 'strOpcion');
     if (!$strOpcion) {
         $strOpcion=filter_input(INPUT_POST, 'strOpcion');
@@ -43,18 +41,15 @@ try {
 
     switch ($strOpcion) {//SIN BASE DE DATOS
     case "GetWsConfig":
-    //localhost/wsPhp/rest/api.php,wswcf.azurewebsites.net/rest/api.php,REST
-    //wswcf.azurewebsites.net,www.pymeti.com/rest/api.php,WCF
-    //wswcf.azurewebsites.net/rest/api.php,www.pymeti.com/rest/api.php,REST
-    //www.pymeti.com/rest/api.php,wswcf.azurewebsites.net/rest/api.php,REST
-      $strResultado="www.pymeti.com/rest/api.php,wswcf.azurewebsites.net/rest/api.php,REST";
+      
+      $strResultado=$gWsConfig;
+
     break;
     case "GetEsquemaInicial":
       $strBase=filter_input(INPUT_GET, 'strBase');
       if (!$strBase) {
           $strBase=filter_input(INPUT_POST, 'strBase');
       }
-
       if ($strBase!="") {
           $strBase="database/".$strBase."bdScript.sql";
           $myfile= fopen($strBase, "r") or die("");
@@ -76,6 +71,16 @@ try {
     break;
     case "zipfileElimina"://Elimina archivo
       unlink($Accion);
+    break;
+    case "RespBDRemota"://En sitio alterno respaldar las bd del sitio remoto
+      $strValores = explode(",",$gWsConfig);      
+      include('clsRutinas.php');
+      $strResultado = CallAPI("POST",$strValores[0],array("strOpcion" => "strOpcion","strDBName" => "patris.db"));
+      //$strResultado =$strValores[0]."?strOpcion=strOpcion&strDBName=patris.db";
+      //$strResultado = file_get_contents($strValores[0]."?strOpcion=GetFechaServer&strDBName=patris.db");      
+      //$strResultado = json_decode($strResultado);
+    break;
+    case "RespGetListaBd"://      
     break;
     default://CON BASE DE DATOS
       include('apidb.php');
