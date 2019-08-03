@@ -126,7 +126,12 @@ if ($db) {
         $result= new \stdClass();
         $result->Resultado = pa_Direccion($strTipo, $intCode, $strXml, $intUsrId);
         $strResultado=json_encode($result);
-    break;                              
+    break;    
+    case "test":
+        $result= new \stdClass();
+        $result->Resultado = test($intCode, $strXml, $intUsrId, $strIpAddress);
+        $strResultado=json_encode($result);
+    break;                           
     default:
         $xDoc= new SimpleXMLElement($strXml);
         $strSql="SELECT * FROM paraCatalogo WHERE CATA_CataID=102 ORDER BY CATA_CataID";        

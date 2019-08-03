@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
     
         
         {
@@ -20,7 +21,7 @@
             "stopOnEntry": true,
             "cwd": "${fileDirname}",
             "port": 9000,
-            "runtimeExecutable": "C:\\wamp64\\bin\\php\\php7.2.14\\php.exe"
+            "runtimeExecutable": "D:\\wamp64\\bin\\php\\php7.2.10\\php.exe"
         }
     ]
 }

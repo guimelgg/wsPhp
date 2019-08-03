@@ -5,7 +5,7 @@ if (!ob_start("ob_gzhandler")) {
 }
 try {
   //  
-    $gWsConfig="localhost/wsPhp/rest/api.php,wswcf.azurewebsites.net/rest/api.php,REST";
+    $gWsConfig="www.pymeti.com/rest/api.php,wswcf.azurewebsites.net/rest/api.php,REST";
       //localhost/wsPhp/rest/api.php,wswcf.azurewebsites.net/rest/api.php,REST
       //wswcf.azurewebsites.net,www.pymeti.com/rest/api.php,WCF
       //wswcf.azurewebsites.net/rest/api.php,www.pymeti.com/rest/api.php,REST
