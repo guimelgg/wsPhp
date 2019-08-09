@@ -30,6 +30,10 @@ if ($db) {
     $gstrFechaHoy="strftime('%Y-%m-%d %H:%M:%S',datetime('now','localtime'))";
     include('clsEnt.php');
     include('clsPos.php');
+    //Actualizar la Fecha en que se actualizaron los datos
+    $strSql = "UPDATE paraBdSincroniza SET BDSI_Datos =".$gstrFechaHoy;    
+    $stmt = $db->prepare($strSql);$stmt->execute();
+
     switch ($strOpcion) {
     case "GetFechaServer":
         $strSql="SELECT strftime('%d/%m/%Y %H:%M:%S',datetime('now','localtime')) Fecha";
