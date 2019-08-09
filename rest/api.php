@@ -30,6 +30,7 @@ try {
     if (!$Parametro1) {
         $Parametro1 = filter_input(INPUT_POST, 'Parametro1');
     }
+    
     //$Parametro2
     $Parametro2 = filter_input(INPUT_GET, 'Parametro2');
     if (!$Parametro2) {
@@ -38,7 +39,7 @@ try {
 
 
     $strResultado="";
-
+    
     switch ($strOpcion) {//SIN BASE DE DATOS
     case "GetWsConfig":
       
@@ -51,7 +52,7 @@ try {
           $strBase=filter_input(INPUT_POST, 'strBase');
       }
       if ($strBase!="") {
-          $strBase="database/".$strBase."bdScript.sql";
+          $strBase="otros/".$strBase."bdScript.sql";
           $myfile= fopen($strBase, "r") or die("");
           $strResultado=fread($myfile, filesize($strBase));
           fclose($myfile);

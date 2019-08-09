@@ -233,23 +233,25 @@ function pa_CATA_abcparaCatalogo($intCode, $strXml, $intUsrId, $strIpAddress)
     return $intCode;
 }
 function pa_BDSI_consultaparaBdSincroniza($Accion, $Code1, $Parametro1, $Parametro2)
-{
+{  
     global $db;
     if ($db) {
-        $Parametro1 = "'" . $Parametro1 . "'";
+        //$Parametro1 = "'" . $Parametro1 . "'";        
         switch ($Accion) {
-          case "GETDATOSXUSUARIO":
+          case "GETDATOSXUSUARIO":          
           $strResultado='';
           //Tablas
           $strTablas = explode('|', $Parametro2);
           foreach ($strTablas as $key => $value) {
               $strTablaAux = explode('.', $value);
-              $strSql="SELECT * FROM $strTablaAux[0] WHERE $strTablaAux[1]>=$Parametro1";
+              $strSql="SELECT * FROM $strTablaAux[0] WHERE $strTablaAux[1]>=$Parametro1";              
+              //echo $strSql;
               $result =$db->query($strSql);
               $strJson=json_encode($result->fetchAll(PDO::FETCH_OBJ));
               if ($strJson!=='[]') {
                   $strResultado .= ($strResultado == '' ? '' : ',') . '"'.$strTablaAux[0].'":'.$strJson.'';
               }
+              
           }
           $strResultado = '{'.$strResultado.'}';
           return $strResultado;

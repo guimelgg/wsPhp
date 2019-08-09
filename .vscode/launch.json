@@ -13,15 +13,17 @@
             "request": "launch",
             "port": 9000
         },
-        {
-            "name": "Launch currently open script",
-            "type": "php",
-            "request": "launch",
-            "program": "${file}",
-            "stopOnEntry": true,
-            "cwd": "${fileDirname}",
-            "port": 9000,
-            "runtimeExecutable": "D:\\wamp64\\bin\\php\\php7.2.10\\php.exe"
-        }
+      {
+        "name": "Launch currently open script",
+        "type": "php",
+        "request": "launch",
+        "program": "${file}",
+        "stopOnEntry": true,
+        "cwd": "${fileDirname}",
+        "port": 9000,
+        "runtimeExecutable": "C:\\wamp64\\bin\\php\\php7.2.14\\php.exe"
+        //C:\\wamp64\\bin\\php\\php7.2.14\\php.exe
+        //"D:\\wamp64\\bin\\php\\php7.2.10\\php.exe"
+      }
     ]
 }
