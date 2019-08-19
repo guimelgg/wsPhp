@@ -157,6 +157,23 @@ function pa_PROD_abcIngProducto($intCode, $strXml, $intUsrId, $strIpAddress)
                 }
             }
             break;
+        case "RecUltimoCto"://Recalcula el ultimo costo
+            $strSql="CREATE TEMP VIEW TempActCto AS SELECT MODT_ProdID,MODT_Costo
+                FROM InvMovimientoDet INNER JOIN (
+                    SELECT MAX(MODT_MODTID) MODTID 
+                    FROM InvMovimiento INNER JOIN paraCatalogo TipoMov ON MOIN_TIPOMOVCATAID=CATA_CATAID
+                    AND CATA_DESC1='ENT.COMPRA' AND MOIN_ESTATUS<>'B'".($intCode > 0 ? " AND MOIN_MOINID=".$intCode : "").
+                    " INNER JOIN InvMovimientoDet ON MOIN_MOINID=MODT_MOINID AND MODT_ESTATUS<>'B' AND MODT_Costo>0
+                    GROUP BY MODT_ProdID) AUX ON AUX.MODTID=MODT_MODTID;";            
+            $stmt = $db->prepare($strSql);
+            $stmt->execute();
+            $strSql="UPDATE IngProducto SET PROD_CostoUltimo=(SELECT MODT_Costo FROM TempActCto WHERE IngProducto.PROD_ProdID=TempActCto.MODT_ProdID)
+                ,PROD_UsuaDate=$gstrFechaHoy
+                WHERE PROD_Estatus='A'
+                AND PROD_ProdID IN (SELECT MODT_ProdID FROM TempActCto WHERE IngProducto.PROD_ProdID=TempActCto.MODT_ProdID AND IngProducto.PROD_CostoUltimo<>TempActCto.MODT_Costo);";
+            $stmt = $db->prepare($strSql);
+            $stmt->execute();                
+        break;
           default:
             break;
         }
