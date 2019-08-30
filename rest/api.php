@@ -74,14 +74,37 @@ try {
       unlink($Accion);
     break;
     case "RespBDRemota"://En sitio alterno respaldar las bd del sitio remoto
-      $strValores = explode(",",$gWsConfig);      
-      include('clsRutinas.php');
-      $strResultado = CallAPI("POST",$strValores[0],array("strOpcion" => "strOpcion","strDBName" => "patris.db"));
-      //$strResultado =$strValores[0]."?strOpcion=strOpcion&strDBName=patris.db";
-      //$strResultado = file_get_contents($strValores[0]."?strOpcion=GetFechaServer&strDBName=patris.db");      
-      //$strResultado = json_decode($strResultado);
+      //Obtener el listado de todos los archivos
+      include('clsRutinas.php');      
+      $strValores = explode(",",$gWsConfig); 
+      //echo $strValores[0];
+      $strResultado= CallAPI("POST",$strValores[0],array("strOpcion" => "RespGetListaBd"));
+      $strFilesToBack=explode(",",$strResultado);
+      foreach ($strFilesToBack as $strFileToBack ) {
+        $strResultado = CallAPI("POST",$strValores[0],array("strOpcion" => "zipfileCrea","strDBName" => $strFileToBack));
+        if ($strResultado !== ""){        
+          $strDownlaodLink="http://".str_replace("api.php",$strResultado,$strValores[0]);
+          //echo $strDownlaodLink;
+          $strFileToBackLocal="../../dbrespaldo/".str_replace(".db",".zip".date("d"),$strFileToBack);
+          //echo $strFileToBack;
+          file_put_contents($strFileToBackLocal,fopen($strDownlaodLink,"r"));
+          //Elimina Archivo zip remoto
+          //echo $strFileToBack;
+          CallAPI("POST",$strValores[0],array("strOpcion" => "zipfileElimina","Accion" => $strResultado));
+        }        
+      }
+      $strResultado='';                             
     break;
-    case "RespGetListaBd"://      
+    case "RespGetListaBd"://Obtener el listado de todos los archivos a respaldar
+      $strPath = "../../database/";
+      $strResultado="";
+      foreach(glob($strPath.'/*.db') as $file){
+        $strResultado.=($strResultado==""?"":",").str_replace($strPath."/","",$file);
+      }      
+    break;
+    case "RespPpaltoSec"://Mandar llamar el Respaldar BD del principal al secundario
+      include('clsRutinas.php');      
+      CallAPI("POST","wswcf.azurewebsites.net/rest/api.php",array("strOpcion" => "RespBDRemota"));
     break;
     default://CON BASE DE DATOS
       include('apidb.php');
