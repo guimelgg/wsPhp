@@ -27,6 +27,15 @@ include('db.php');
 connectDB($strDBName);
 //echo ($db ? "db SI" : "db NO");
 if ($db) {
+    //Validar si strXml termina en .xml para cargar los datos del archivo que esta en temp y eliminarlo    
+    if (substr($strXml,-4) == ".xml"){
+        $strArchivo='./temp/'.$strXml;
+        $myfile= fopen($strArchivo, "r") or die("");
+        $strXml=fread($myfile, filesize($strArchivo));
+        fclose($myfile);
+        unlink($strArchivo);
+    }
+    //echo $strXml;
     $gstrFechaHoy="strftime('%Y-%m-%d %H:%M:%S',datetime('now','localtime'))";
     include('clsEnt.php');
     include('clsPos.php');
