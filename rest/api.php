@@ -85,7 +85,7 @@ try {
         if ($strResultado !== ""){        
           $strDownlaodLink="http://".str_replace("api.php",$strResultado,$strValores[0]);
           //echo $strDownlaodLink;
-          $strFileToBackLocal="../../dbrespaldo/".str_replace(".db",".zip".date("d"),$strFileToBack);
+          $strFileToBackLocal="../../dbrespaldo/".str_replace(".db",".zip".date("w"),$strFileToBack);
           //echo $strFileToBack;
           file_put_contents($strFileToBackLocal,fopen($strDownlaodLink,"r"));
           //Elimina Archivo zip remoto
