@@ -262,6 +262,20 @@ function pa_BDSI_consultaparaBdSincroniza($Accion, $Code1, $Parametro1, $Paramet
         return null;
     }
 }
+function fGetDataSet($strSql, $strClave){
+  if (CrearHash("123")=== $strClave){
+    global $db;
+    if ($db) {          
+      $stmt = $db->prepare($strSql);      
+      $stmt->execute();
+      return $stmt;
+    } else {
+        return null;
+    }
+  }else {
+    return null;
+  }
+}
 // Template abc uno a muchos
 function pa_XXXX_abctblNombre($intCode, $strXml, $intUsrId, $strIpAddress)
 {
