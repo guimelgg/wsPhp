@@ -140,10 +140,9 @@ if ($db) {
         $result->Resultado = pa_Direccion($strTipo, $intCode, $strXml, $intUsrId);
         $strResultado=json_encode($result);
     break;    
-    case "test":
-        $result= new \stdClass();
-        $result->Resultado = test($intCode, $strXml, $intUsrId, $strIpAddress);
-        $strResultado=json_encode($result);
+    case "fGetDataSet":
+        $result = fGetDataSet($Accion,$Parametro1);
+        $strResultado=json_encode($result->fetchAll(PDO::FETCH_OBJ));    
     break;                           
     default:
         $xDoc= new SimpleXMLElement($strXml);
