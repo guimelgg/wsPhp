@@ -49,7 +49,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |				'ssl_ca'     - Path to the certificate authority file
 |				'ssl_capath' - Path to a directory containing trusted CA certificates in PEM format
 |				'ssl_cipher' - List of *allowed* ciphers to be used for the encryption, separated by colons (':')
-|				'ssl_verify' - TRUE/FALSE; Whether verify the server certificate or not
+|				'ssl_verify' - TRUE/FALSE; Whether verify the server certificate or not ('mysqli' only)
 |
 |	['compress'] Whether or not to use client compression (MySQL only)
 |	['stricton'] TRUE/FALSE - forces 'Strict Mode' connections
@@ -69,10 +69,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 | The $query_builder variables lets you determine whether or not to load
 | the query builder class.
-with PDO
-'dsn'      => 'sqlite:application/database/data.db'
-'database' => '',
-'dbdriver' => 'pdo'
 */
 $active_group = 'default';
 $query_builder = TRUE;
@@ -82,7 +78,7 @@ $db['default'] = array(
 	'hostname' => '',
 	'username' => '',
 	'password' => '',
-	'database' => APPPATH.'/database/login.db',
+	'database' => APPPATH.'/database/login_db',
 	'dbdriver' => 'sqlite3',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
