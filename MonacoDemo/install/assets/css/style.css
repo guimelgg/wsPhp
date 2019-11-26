@@ -1,0 +1,71 @@
+.hide {
+	 	display: none;
+	 } 
+body{
+	background: url(../img/install.jpg) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+		color: #293953;
+		font-family: 'Lato', sans-serif;
+ }	
+.installmodal-container {
+  padding: 30px;
+  max-width: 700px;
+  width: 100% !important;
+  background-color: #F0F0F0;
+  margin: 0 auto;
+  margin-top: 150px;
+  border-radius: 2px;
+  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+			}
+.modal-backdrop {
+	background: none;
+}
+.logo {
+	margin-top: 50px;
+}
+.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover {
+	background: none;
+	border: none;
+	background-color: #293953;
+	color: white;
+	border-radius: 3px;
+}
+.nav-tabs>li>a {
+	text-align: center;
+    color: #293953;
+	 font-weight: 400;
+	 text-transform: uppercase;
+	 border: none;
+	 font-size: 18px;
+	 background-color:#b9bbbd;
+	 margin-bottom:6px;
+}
+.nav-tabs>li>a>p {
+	font-weight: 500;
+	font-size: 10px;
+	margin: 0;
+	text-transform: capitalize;
+}
+.nav-tabs>li>a:hover {
+   background: none;
+	border: none;
+}
+.nav-tabs {
+	border: none;
+}
+.label-success {
+		background-color: #4CAF50;
+}
+.btn-next {
+	background-color: #293953;
+	color: white;
+	float: right;
+}
+.btn-next:hover {
+	background-color: #425c77;
+	color: white;
+}

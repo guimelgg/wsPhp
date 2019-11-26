@@ -1,0 +1,4 @@
+
+add "install" example:
+
+localhost/demo/install
