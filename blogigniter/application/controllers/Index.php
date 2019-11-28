@@ -12,7 +12,8 @@ class Index extends MY_Controller {
     public function index() {
         if ($this->session->userdata("auth_level") == 9)
             redirect("/admin");
-        redirect("/blog");
+        $this->load->view('inicio');
+        //redirect("/blog");
     }
 
 }

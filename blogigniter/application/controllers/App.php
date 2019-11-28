@@ -109,6 +109,65 @@ class App extends MY_Controller {
             $this->form_validation->set_rules('surname', 'apellido', 'max_length[100]|required');
             $this->form_validation->set_message('is_unique', 'El %s ya está registrado');
 
+            $data['name'] = $this->input->post("username");
+            $data['surname'] = '.';
+            $data['username'] = $this->input->post("username");
+            $data['email'] = $this->input->post("email");
+
+            if ($this->form_validation->run()) {
+
+                $save = array(
+                    'name' => $this->input->post("username"),
+                    'surname' => '.',
+                    'username' => $this->input->post("username"),
+                    'email' => $this->input->post("email"),
+                    'passwd' => $this->authentication->hash_passwd($this->input->post("passwd")),
+                    'user_id' => $this->User->get_unused_id(),
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'auth_level' => 1
+                );
+
+                $this->User->insert($save);
+
+                //TODO enviar email
+
+                $this->session->set_flashdata('text', "Registro exitoso");
+                $this->session->set_flashdata('type', 'success');
+                //redirect("/login");
+                //successful
+                echo json_encode([
+                    'status' => 1,
+                    'message' => 'El registro se realizo satisfactoriamente'                    
+                ]);                
+            }else
+            {
+                echo json_encode([
+                    'status' => 0,
+                    'message' => 'No se realizo el registro'                    
+                ]);                
+            }
+        }
+
+        $view['body'] = $this->load->view("app/register", $data, TRUE);
+        $this->parser->parse("admin/template/body_format_2", $view);
+    }
+/*
+public function register() {
+
+        if ($this->uri->uri_string() == 'app/register')
+            show_404();
+
+        $data["name"] = $data["surname"] = $data["username"] = $data["email"] = "";
+
+        if ($this->input->server('REQUEST_METHOD') == "POST") {
+
+            $this->form_validation->set_rules('username', 'usuario', 'max_length[12]|is_unique[' . config_item('user_table') . '.username]|required');
+            $this->form_validation->set_rules('email', 'email', 'trim|required|valid_email|is_unique[' . config_item('user_table') . '.email]');
+            $this->form_validation->set_rules('passwd', 'contraseña', 'min_length[8]|trim|required|max_length[72]|callback_validate_passwd');
+            $this->form_validation->set_rules('name', 'nombre', 'max_length[100]|required');
+            $this->form_validation->set_rules('surname', 'apellido', 'max_length[100]|required');
+            $this->form_validation->set_message('is_unique', 'El %s ya está registrado');
+
             $data['name'] = $this->input->post("name");
             $data['surname'] = $this->input->post("surname");
             $data['username'] = $this->input->post("username");
@@ -140,6 +199,7 @@ class App extends MY_Controller {
         $view['body'] = $this->load->view("app/register", $data, TRUE);
         $this->parser->parse("admin/template/body_format_2", $view);
     }
+*/
 
     /* Perfil */
 

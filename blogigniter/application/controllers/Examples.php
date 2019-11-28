@@ -187,10 +187,12 @@ class Examples extends MY_Controller
 	 *   - Must have at least one upper case letter
 	 *   - Must not have any space, tab, or other whitespace characters
 	 *   - No backslash, apostrophe or quote chars are allowed
+	 * admin,PepeLePew7
+	 * 
 	 */
 	public function create_user()
 	{
-		// Customize this array for your user
+		// Customize this array for your user  
 		$user_data = [
 			'username'   => 'admin',
 			'passwd'     => 'Prueba99',
